@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>GuardianLink — Cybersecurity Volunteers for Non-Profits</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* ============ DESIGN TOKENS ============ */
+        :root{
+            --bg:#070b16; --bg-2:#0b1222; --card:#111a2e; --card-2:#16213a;
+            --line:#1f2c47; --txt:#e9eefb; --muted:#90a0bf;
+            --acc:#2de2c5; --acc-2:#4d8cff; --danger:#ff5d6c; --warn:#ffb648; --ok:#3ddc84;
+            --r:14px; --shadow:0 18px 40px rgba(0,0,0,.45);
+        }
+        *{box-sizing:border-box}
+        html,body{margin:0;padding:0}
+        body{
+            background:var(--bg); color:var(--txt);
+            font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+            line-height:1.55; -webkit-font-smoothing:antialiased;
+        }
+        a{color:var(--acc);text-decoration:none}
+        h1,h2,h3,h4{line-height:1.2;margin:0 0 .5rem}
+        h1{font-size:clamp(2rem,5vw,3.4rem);font-weight:800;letter-spacing:-.02em}
+        h2{font-size:clamp(1.5rem,3vw,2.2rem);font-weight:700;letter-spacing:-.01em}
+        p{margin:0 0 1rem;color:var(--muted)}
+        .wrap{width:min(1180px,92vw);margin-inline:auto}
+        .section{padding:72px 0}
+        .center{text-align:center}
+        .muted{color:var(--muted)}
+        .small{font-size:.86rem}
+
+        /* ============ NAV ============ */
+        .nav{position:sticky;top:0;z-index:60;backdrop-filter:blur(12px);
+            background:rgba(7,11,22,.82);border-bottom:1px solid var(--line)}
+        .nav-in{display:flex;align-items:center;gap:1rem;height:68px}
+        .brand{display:flex;align-items:center;gap:.6rem;font-weight:800;font-size:1.12rem;cursor:pointer;color:var(--txt)}
+        .brand svg{width:28px;height:28px}
+        .nav-links{display:flex;gap:.35rem;margin-left:auto;align-items:center}
+        .nav-links a,.nav-btn{padding:.5rem .85rem;border-radius:10px;color:var(--muted);
+            font-weight:500;font-size:.94rem;cursor:pointer;background:none;border:0;font-family:inherit}
+        .nav-links a:hover,.nav-btn:hover{color:var(--txt);background:var(--card)}
+        .nav-btn.active{color:var(--acc);background:rgba(45,226,197,.08)}
+        .burger{display:none;margin-left:auto;background:var(--card);border:1px solid var(--line);
+            color:var(--txt);border-radius:10px;padding:.5rem .7rem;cursor:pointer;font-size:1.1rem}
+        @media(max-width:900px){
+            .burger{display:block}
+            .nav-links{position:absolute;top:68px;left:0;right:0;flex-direction:column;align-items:stretch;
+                background:var(--bg-2);border-bottom:1px solid var(--line);padding:.75rem;gap:.25rem;display:none}
+            .nav-links.open{display:flex}
+        }
+
+        /* ============ BUTTONS ============ */
+        .btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;
+            padding:.72rem 1.25rem;border-radius:11px;border:1px solid transparent;
+            font-weight:600;font-size:.95rem;cursor:pointer;font-family:inherit;transition:.18s;white-space:nowrap}
+        .btn:disabled{opacity:.5;cursor:not-allowed}
+        .btn-primary{background:linear-gradient(135deg,var(--acc),var(--acc-2));color:#06101d}
+        .btn-primary:hover:not(:disabled){filter:brightness(1.1);transform:translateY(-1px)}
+        .btn-ghost{background:var(--card);border-color:var(--line);color:var(--txt)}
+        .btn-ghost:hover{border-color:var(--acc);color:var(--acc)}
+        .btn-danger{background:rgba(255,93,108,.12);border-color:rgba(255,93,108,.4);color:var(--danger)}
+        .btn-danger:hover{background:rgba(255,93,108,.22)}
+        .btn-sm{padding:.4rem .7rem;font-size:.84rem;border-radius:9px}
+        .btn-block{width:100%}
+
+        /* ============ HERO ============ */
+        .hero{position:relative;overflow:hidden;padding:96px 0 84px;border-bottom:1px solid var(--line)}
+        .hero::before{content:'';position:absolute;inset:0;
+            background:radial-gradient(900px 420px at 15% -10%,rgba(45,226,197,.16),transparent 60%),
+            radial-gradient(800px 400px at 85% 0%,rgba(77,140,255,.18),transparent 60%);}
+        .hero::after{content:'';position:absolute;inset:0;opacity:.35;
+            background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+            background-size:52px 52px;mask-image:radial-gradient(ellipse at 50% 0%,#000,transparent 72%)}
+        .hero-in{position:relative;z-index:2;max-width:760px}
+        .pill{display:inline-flex;align-items:center;gap:.5rem;padding:.35rem .85rem;border-radius:999px;
+            border:1px solid rgba(45,226,197,.35);background:rgba(45,226,197,.08);color:var(--acc);
+            font-size:.82rem;font-weight:600;margin-bottom:1.1rem}
+        .hero p{font-size:1.1rem;max-width:620px}
+        .hero-cta{display:flex;gap:.75rem;flex-wrap:wrap;margin-top:1.6rem}
+        .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin-top:3.2rem;position:relative;z-index:2}
+        .stat{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:1.1rem 1.25rem}
+        .stat b{display:block;font-size:1.75rem;color:var(--acc);letter-spacing:-.02em}
+
+        /* ============ CARDS / GRID ============ */
+        .grid{display:grid;gap:1.1rem}
+        .g3{grid-template-columns:repeat(auto-fit,minmax(290px,1fr))}
+        .g2{grid-template-columns:repeat(auto-fit,minmax(330px,1fr))}
+        .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:1.4rem}
+        .card.hov{transition:.2s}
+        .card.hov:hover{border-color:rgba(45,226,197,.45);transform:translateY(-3px);box-shadow:var(--shadow)}
+        .icon{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-size:1.25rem;
+            background:rgba(45,226,197,.1);border:1px solid rgba(45,226,197,.25);margin-bottom:.9rem}
+        .kicker{text-transform:uppercase;letter-spacing:.16em;font-size:.76rem;font-weight:700;color:var(--acc);margin-bottom:.6rem}
+
+        /* ============ CHIPS / BADGES ============ */
+        .chips{display:flex;flex-wrap:wrap;gap:.4rem}
+        .chip{padding:.28rem .66rem;border-radius:999px;border:1px solid var(--line);
+            background:var(--card-2);font-size:.78rem;color:var(--muted);cursor:pointer;user-select:none;font-family:inherit}
+        .chip.on{border-color:var(--acc);background:rgba(45,226,197,.12);color:var(--acc)}
+        .badge{display:inline-flex;align-items:center;gap:.35rem;padding:.2rem .6rem;border-radius:999px;
+            font-size:.74rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase}
+        .b-ok{background:rgba(61,220,132,.12);color:var(--ok)}
+        .b-warn{background:rgba(255,182,72,.12);color:var(--warn)}
+        .b-ngo{background:rgba(77,140,255,.14);color:var(--acc-2)}
+        .b-vol{background:rgba(45,226,197,.14);color:var(--acc)}
+        .b-admin{background:rgba(255,93,108,.14);color:var(--danger)}
+
+        /* ============ FORMS ============ */
+        .form{display:grid;gap:1rem}
+        .field{display:grid;gap:.4rem}
+        label{font-size:.88rem;font-weight:600}
+        .input,select,textarea{width:100%;padding:.78rem .9rem;border-radius:11px;background:var(--bg-2);
+            border:1px solid var(--line);color:var(--txt);font-family:inherit;font-size:.95rem;outline:none;transition:.15s}
+        .input:focus,select:focus,textarea:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(45,226,197,.14)}
+        textarea{resize:vertical;min-height:92px}
+        .row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+        @media(max-width:620px){.row{grid-template-columns:1fr}}
+        .err{color:var(--danger);font-size:.82rem}
+        .check{display:flex;gap:.65rem;align-items:flex-start;font-weight:500;font-size:.9rem;color:var(--muted);cursor:pointer}
+        .check input{margin-top:.25rem;accent-color:var(--acc);width:18px;height:18px}
+        .tabs{display:flex;gap:.4rem;background:var(--bg-2);border:1px solid var(--line);
+            padding:.35rem;border-radius:12px;margin-bottom:1.5rem}
+        .tab{flex:1;padding:.6rem;border-radius:9px;border:0;background:none;color:var(--muted);
+            font-family:inherit;font-weight:600;cursor:pointer;font-size:.92rem}
+        .tab.on{background:var(--card);color:var(--txt);box-shadow:0 2px 10px rgba(0,0,0,.3)}
+        .auth-wrap{max-width:560px;margin:0 auto}
+        .form-wrap{max-width:720px;margin:0 auto}
+
+        /* ============ TABLE ============ */
+        .table-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r)}
+        table{width:100%;border-collapse:collapse;min-width:720px}
+        th,td{padding:.85rem 1rem;text-align:left;border-bottom:1px solid var(--line);font-size:.9rem;vertical-align:middle}
+        th{background:var(--bg-2);font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+        tr:last-child td{border-bottom:0}
+        .actions{display:flex;gap:.4rem;flex-wrap:wrap}
+
+        /* ============ MODAL / TOAST ============ */
+        .overlay{position:fixed;inset:0;background:rgba(3,6,13,.76);backdrop-filter:blur(5px);
+            display:grid;place-items:center;padding:1.2rem;z-index:100}
+        .modal{background:var(--card);border:1px solid var(--line);border-radius:18px;
+            width:min(620px,100%);max-height:88vh;overflow:auto;padding:1.75rem;box-shadow:var(--shadow)}
+        .modal-head{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;margin-bottom:1.1rem}
+        .x{background:none;border:0;color:var(--muted);font-size:1.5rem;cursor:pointer;line-height:1}
+        .toasts{position:fixed;bottom:1.2rem;right:1.2rem;z-index:200;display:grid;gap:.6rem;max-width:min(380px,92vw)}
+        .toast{background:var(--card-2);border:1px solid var(--line);border-left:3px solid var(--acc);
+            padding:.85rem 1rem;border-radius:11px;box-shadow:var(--shadow);font-size:.9rem;animation:slide .25s ease}
+        .toast.err{border-left-color:var(--danger)}
+        @keyframes slide{from{transform:translateX(20px);opacity:0}}
+
+        /* ============ MISC ============ */
+        .avatar{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;font-weight:800;
+            background:linear-gradient(135deg,var(--acc),var(--acc-2));color:#06101d;flex:none}
+        .profile-head{display:flex;gap:.9rem;align-items:center;margin-bottom:1rem}
+        .toolbar{display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1.5rem}
+        .toolbar .input,.toolbar select{width:auto;flex:1;min-width:210px}
+        .partners{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1rem}
+        .partner{border:1px solid var(--line);border-radius:12px;padding:1.1rem;text-align:center;
+            background:var(--card);font-weight:700;color:var(--muted);font-size:.95rem}
+        .partner span{display:block;font-size:.74rem;font-weight:500;color:#6b7c9c;margin-top:.2rem}
+        .steps{counter-reset:s}
+        .step{display:flex;gap:1rem;padding:1.1rem 0;border-bottom:1px dashed var(--line)}
+        .step:last-child{border:0}
+        .step-n{width:34px;height:34px;flex:none;border-radius:10px;display:grid;place-items:center;
+            background:rgba(77,140,255,.14);color:var(--acc-2);font-weight:800}
+        .footer{border-top:1px solid var(--line);padding:2.5rem 0;background:var(--bg-2)}
+        .foot-grid{display:flex;justify-content:space-between;gap:1.5rem;flex-wrap:wrap;align-items:center}
+        .empty{text-align:center;padding:3.5rem 1rem;border:1px dashed var(--line);border-radius:var(--r);color:var(--muted)}
+        .divider{height:1px;background:var(--line);margin:1.4rem 0}
+        .notice{background:rgba(77,140,255,.08);border:1px solid rgba(77,140,255,.3);
+            border-radius:11px;padding:.85rem 1rem;font-size:.88rem;color:#b9cdf2;margin-bottom:1.2rem}
+    </style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone@7.26.4/babel.min.js" crossorigin></script>
+
+<script type="text/babel" data-presets="react">
+    const { useState, useEffect, useMemo } = React;
+
+    /* =======================================================================
+       1. CONSTANTS
+       ===================================================================== */
+    const AREAS = [
+        "Phishing / Email Security","Ransomware Readiness","Network Security",
+        "Cloud Security","Incident Response","Policy & Compliance",
+        "Staff Security Training","Data Privacy","Web / App Security",
+        "Endpoint Protection","Vulnerability Assessment","Backup & Recovery"
+    ];
+    const ROLE = { NGO:"ngo", VOL:"volunteer", ADMIN:"admin" };
+    const ROLE_LABEL = { ngo:"Non-Profit", volunteer:"Volunteer", admin:"Admin" };
+
+
+    const uid = () => Math.random().toString(36).slice(2, 10);
+
+
+
+    const API = "/api";
+    let cachedMe = null;
+
+    const tokenStore = {
+        get: () => localStorage.getItem("guardianlink.token"),
+        set: (t) => localStorage.setItem("guardianlink.token", t),
+        clear: () => localStorage.removeItem("guardianlink.token")
+    };
+
+    async function request(path, { method = "GET", body } = {}) {
+        const headers = { "Content-Type": "application/json" };
+        const token = tokenStore.get();
+        if (token) headers.Authorization = `Bearer ${token}`;
+        const res = await fetch(API + path, { method, headers, body: body ? JSON.stringify(body) : undefined });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.message || `Request failed (${res.status})`);
+        return data;
+    }
+
+    // --- role + field normalisation -------------------------------------------
+    const ROLE_MAP = { ngo:"ngo", NGO:"ngo", vol:"volunteer", VOL:"volunteer",
+        volunteer:"volunteer", admin:"admin", ADMIN:"admin" };
+    const toRole = (r) => ROLE_MAP[r] || r;
+
+    // backend stores `orgName`; your UI uses `org` — expose both
+    const shape = (u) => u ? { ...u, org: u.orgName ?? u.org, orgName: u.orgName ?? u.org } : u;
+
+    function outbound(p = {}) {
+        const q = { ...p };
+        if (q.org !== undefined && q.orgName === undefined) q.orgName = q.org;
+        delete q.org;
+        if (q.role) q.role = toRole(q.role);
+        if (q.pw && !q.password) { q.password = q.pw; delete q.pw; }
+        return q;
+    }
+
+    const api = {
+        login: async (email, password) => {
+            const d = await request("/auth/login", { method:"POST", body:{ email, password } });
+            tokenStore.set(d.token);
+            cachedMe = shape(d.user);
+            return cachedMe;
+        },
+
+        changePassword: (currentPassword, newPassword) =>
+            request("/auth/change-password", { method: "POST", body: { currentPassword, newPassword } }),
+
+
+        // Doubles as signup AND admin-creates-user (line 1017)
+        register: async (payload) => {
+            const body = outbound(payload);
+            if (cachedMe && cachedMe.role === "admin") {
+                const d = await request("/admin/users", { method:"POST", body });
+                return shape(d.user);                     // admin's own session untouched
+            }
+            const d = await request("/auth/register", { method:"POST", body });
+            tokenStore.set(d.token);
+            cachedMe = shape(d.user);
+            return cachedMe;
+        },
+
+        logout: async () => { tokenStore.clear(); cachedMe = null; },
+
+        currentUser: async () => {
+            if (!tokenStore.get()) { cachedMe = null; return null; }
+            try { cachedMe = shape((await request("/auth/me")).user); return cachedMe; }
+            catch { tokenStore.clear(); cachedMe = null; return null; }
+        },
+
+        directory: async (arg) => {
+            const q = typeof arg === "string" ? arg : "";   // ignores the `me` object
+            const d = await request(`/users/directory${q ? `?q=${encodeURIComponent(q)}` : ""}`);
+            return d.users.map(shape);
+        },
+
+        getProfile:    async (id)    => shape((await request(`/users/${id}`)).user),
+        updateProfile: async (patch) => shape((await request("/users/me", { method:"PATCH", body: outbound(patch) })).user),
+        requestReset:  (email)       => request("/auth/forgot-password", { method:"POST", body:{ email } }),
+
+        // --- admin ---
+        allUsers:      async () => (await request("/admin/users")).users.map(shape),
+        resetRequests: async () => (await request("/admin/reset-requests")).requests,
+        resolveReset:  (id)     => request(`/admin/reset-requests/${id}/resolve`, { method:"POST" }),
+        setRole:       async (id, role) =>
+            shape((await request(`/admin/users/${id}/role`, { method:"PATCH", body:{ role: toRole(role) } })).user),
+        setActive:     async (id, active) =>
+            shape((await request(`/admin/users/${id}/status`, { method:"PATCH", body:{ active } })).user),
+
+        // --- id-aware: self vs admin ---
+        deleteUser: async (id) => {
+            if (cachedMe && String(id) === String(cachedMe.id)) {
+                const r = await request("/users/me", { method:"DELETE" });
+                tokenStore.clear(); cachedMe = null;
+                return r;
+            }
+            return request(`/admin/users/${id}`, { method:"DELETE" });
+        },
+
+        setPassword: async (id, password, currentPassword) => {
+            if (cachedMe && String(id) === String(cachedMe.id)) {
+                if (!currentPassword) {
+                    throw new Error("Please enter your current password");
+                }
+                return request("/auth/change-password", {
+                    method: "POST",
+                    body: { currentPassword, newPassword: password }
+                });
+            }
+            return request(`/admin/users/${id}/password`, { method: "PATCH", body: { password } });
+        },
+    };
+
+
+    /* =======================================================================
+       3. HELPERS
+       ===================================================================== */
+    const isEmail = v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+    const initials = n => (n || "?").split(" ").map(w => w[0]).slice(0,2).join("").toUpperCase();
+    const displayName = u => u.role === ROLE.NGO ? (u.org || u.name) : u.name;
+
+    function mailtoLink(to, subject, body) {
+        return `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    }
+    function composeMessage(me, them) {
+        const iAmNgo = me.role === ROLE.NGO;
+        const subject = iAmNgo
+            ? `GuardianLink: volunteer request from ${me.org || me.name}`
+            : `GuardianLink: volunteer offer from ${me.name}`;
+        const body = iAmNgo
+            ? `Hi ${them.name},\n\nI found your profile on GuardianLink. ${me.org || me.name} is looking for help with:\n  • ${(me.areas||[]).join("\n  • ")}\n\nWould you be available for a short intro call this week?\n\nThank you,\n${me.name}\n${me.org || ""}\n${me.email}`
+            : `Hi ${them.name},\n\nI'm a cybersecurity volunteer on GuardianLink and I saw that ${them.org} needs help with:\n  • ${(them.areas||[]).join("\n  • ")}\n\nI have roughly ${me.hours} hours per week available and would be glad to assist at no cost.\n\nMy background: ${me.linkedin}\n\nBest,\n${me.name}\n${me.email}`;
+        return mailtoLink(them.email, subject, body);
+    }
+
+    /* =======================================================================
+       4. SMALL UI PRIMITIVES
+       ===================================================================== */
+    const Shield = () => (
+        <svg viewBox="0 0 24 24" fill="none" stroke="#2de2c5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 2l8 3.5v6c0 5-3.4 8.9-8 10.5-4.6-1.6-8-5.5-8-10.5v-6L12 2z"/>
+            <path d="M9 12l2 2 4-4"/>
+        </svg>
+    );
+    const Badge = ({ role }) => {
+        const map = { ngo:"b-ngo", volunteer:"b-vol", admin:"b-admin" };
+        return <span className={"badge " + map[role]}>{ROLE_LABEL[role]}</span>;
+    };
+    function Field({ label, error, children, hint }) {
+        return (
+            <div className="field">
+                <label>{label}</label>
+                {children}
+                {hint && <span className="small muted">{hint}</span>}
+                {error && <span className="err">{error}</span>}
+            </div>
+        );
+    }
+    function ChipPicker({ options, value, onChange, max }) {
+        const toggle = o => {
+            if (value.includes(o)) onChange(value.filter(v => v !== o));
+            else if (!max || value.length < max) onChange([...value, o]);
+        };
+        return (
+            <div className="chips">
+                {options.map(o => (
+                    <button type="button" key={o} className={"chip " + (value.includes(o) ? "on" : "")}
+                            onClick={() => toggle(o)} aria-pressed={value.includes(o)}>{o}</button>
+                ))}
+            </div>
+        );
+    }
+    function Modal({ title, subtitle, onClose, children }) {
+        useEffect(() => {
+            const esc = e => e.key === "Escape" && onClose();
+            window.addEventListener("keydown", esc); return () => window.removeEventListener("keydown", esc);
+        }, [onClose]);
+        return (
+            <div className="overlay" onMouseDown={e => e.target === e.currentTarget && onClose()}>
+                <div className="modal" role="dialog" aria-modal="true">
+                    <div className="modal-head">
+                        <div><h3 style={{margin:0}}>{title}</h3>{subtitle && <span className="small muted">{subtitle}</span>}</div>
+                        <button className="x" onClick={onClose} aria-label="Close">×</button>
+                    </div>
+                    {children}
+                </div>
+            </div>
+        );
+    }
+
+    /* =======================================================================
+       5. PUBLIC PAGES
+       ===================================================================== */
+    function Home({ go }) {
+        return (
+            <>
+                <header className="hero">
+                    <div className="wrap hero-in">
+                        <span className="pill">● Free cybersecurity help for non-profits</span>
+                        <h1>Mission-critical security,<br/>donated by the people who do it best.</h1>
+                        <p>GuardianLink connects vetted cybersecurity volunteers with non-profit
+                            organizations that cannot afford commercial security services — at zero cost, forever.</p>
+                        <div className="hero-cta">
+                            <button className="btn btn-primary" onClick={() => go("register", { tab: ROLE.NGO })}>
+                                We're a Non-Profit →
+                            </button>
+                            <button className="btn btn-ghost" onClick={() => go("register", { tab: ROLE.VOL })}>
+                                I want to Volunteer
+                            </button>
+                        </div>
+                        <div className="stats">
+                            <div className="stat"><b>412</b><span className="small muted">Volunteer specialists</span></div>
+                            <div className="stat"><b>168</b><span className="small muted">Non-profits supported</span></div>
+                            <div className="stat"><b>9,300+</b><span className="small muted">Hours donated</span></div>
+                            <div className="stat"><b>$0</b><span className="small muted">Cost to non-profits</span></div>
+                        </div>
+                    </div>
+                </header>
+
+                {/* WHO WE ARE */}
+                <section className="section" id="about">
+                    <div className="wrap">
+                        <div className="kicker">About us</div>
+                        <h2>Who we are</h2>
+                        <p style={{maxWidth:"760px"}}>
+                            GuardianLink is a volunteer-run platform staffed by security analysts, penetration testers,
+                            GRC specialists and incident responders. We are the bridge between people who have
+                            cybersecurity expertise to give and the organizations that need it most.
+                        </p>
+                        <div className="grid g3" style={{marginTop:"2rem"}}>
+                            <div className="card hov">
+                                <div className="icon">🛡️</div>
+                                <h3>What we do</h3>
+                                <p className="small">We match non-profits with screened volunteers based on declared areas of
+                                    concern — from phishing defence and policy writing to full vulnerability assessments —
+                                    then get out of the way so the work can happen.</p>
+                            </div>
+                            <div className="card hov">
+                                <div className="icon">❤️</div>
+                                <h3>Why we do it</h3>
+                                <p className="small">Charities hold donor records, health data and case files, but 70% have no
+                                    security budget at all. A single breach can end a mission. Protection shouldn't be a
+                                    luxury item.</p>
+                            </div>
+                            <div className="card hov">
+                                <div className="icon">🔐</div>
+                                <h3>How we keep it safe</h3>
+                                <p className="small">Every volunteer declares a criminal background check and a verifiable
+                                    LinkedIn profile. Profiles are visible only to logged-in users, and organizations never
+                                    see each other's data.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* HOW IT WORKS */}
+                <section className="section" style={{background:"var(--bg-2)",borderBlock:"1px solid var(--line)"}}>
+                    <div className="wrap">
+                        <div className="kicker">The process</div>
+                        <h2>How GuardianLink works</h2>
+                        <div className="grid g2" style={{marginTop:"1.5rem"}}>
+                            <div className="card">
+                                <Badge role={ROLE.NGO} />
+                                <h3 style={{marginTop:".8rem"}}>For non-profits</h3>
+                                <div className="steps">
+                                    <div className="step"><div className="step-n">1</div><div><b>Register</b><p className="small" style={{margin:0}}>Tell us your organization name, point-of-contact email and areas of concern.</p></div></div>
+                                    <div className="step"><div className="step-n">2</div><div><b>Browse volunteers</b><p className="small" style={{margin:0}}>Search vetted specialists by skill area and weekly availability.</p></div></div>
+                                    <div className="step"><div className="step-n">3</div><div><b>Reach out</b><p className="small" style={{margin:0}}>One click opens a pre-written email to the volunteer you choose.</p></div></div>
+                                </div>
+                            </div>
+                            <div className="card">
+                                <Badge role={ROLE.VOL} />
+                                <h3 style={{marginTop:".8rem"}}>For volunteers</h3>
+                                <div className="steps">
+                                    <div className="step"><div className="step-n">1</div><div><b>Apply</b><p className="small" style={{margin:0}}>Share your name, email, weekly hours, background-check status and LinkedIn.</p></div></div>
+                                    <div className="step"><div className="step-n">2</div><div><b>Find a mission</b><p className="small" style={{margin:0}}>See only non-profit profiles — filtered to the problems you can solve.</p></div></div>
+                                    <div className="step"><div className="step-n">3</div><div><b>Donate your skills</b><p className="small" style={{margin:0}}>Scope the work directly with the organization. No fees, no middleman.</p></div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* PARTNERSHIPS */}
+                <section className="section">
+                    <div className="wrap">
+                        <div className="kicker">Partnerships</div>
+                        <h2>Trusted by people who care</h2>
+                        <p>Our volunteer pipeline and training materials are supported by these partners.</p>
+                        <div className="partners" style={{marginTop:"1.5rem"}}>
+                            {[["NorthBridge Security","Volunteer pipeline"],["OpenShield Foundation","Tooling grants"],
+                                ["Niagara College","Student co-op program"],["CyberSafe Canada","Training curriculum"],
+                                ["Lakeside Legal Clinic","Pro-bono counsel"],["BlueHarbor Cloud","Donated infrastructure"]]
+                                .map(([n,s]) => <div className="partner" key={n}>{n}<span>{s}</span></div>)}
+                        </div>
+                        <div className="card center" style={{marginTop:"2.5rem",background:"linear-gradient(135deg,rgba(45,226,197,.08),rgba(77,140,255,.08))"}}>
+                            <h2>Ready to close the gap?</h2>
+                            <p>Join in under two minutes. Non-profits never pay a cent.</p>
+                            <div style={{display:"flex",gap:".75rem",justifyContent:"center",flexWrap:"wrap"}}>
+                                <button className="btn btn-primary" onClick={() => go("register")}>Create an account</button>
+                                <button className="btn btn-ghost" onClick={() => go("login")}>Sign in</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </>
+        );
+    }
+
+    /* ---------- REGISTER ---------- */
+    function Register({ go, toast, onAuth, initialTab }) {
+        const [tab, setTab] = useState(initialTab || ROLE.NGO);
+        return (
+            <section className="section">
+                <div className="wrap form-wrap">
+                    <div className="center" style={{marginBottom:"1.5rem"}}>
+                        <h2>Create your account</h2>
+                        <p>Choose the option that describes you.</p>
+                    </div>
+                    <div className="tabs">
+                        <button className={"tab " + (tab===ROLE.NGO?"on":"")} onClick={() => setTab(ROLE.NGO)}>Non-Profit / NGO</button>
+                        <button className={"tab " + (tab===ROLE.VOL?"on":"")} onClick={() => setTab(ROLE.VOL)}>Cybersecurity Volunteer</button>
+                    </div>
+                    {tab === ROLE.NGO
+                        ? <NgoForm go={go} toast={toast} onAuth={onAuth} />
+                        : <VolunteerForm go={go} toast={toast} onAuth={onAuth} />}
+                    <p className="center small" style={{marginTop:"1.5rem"}}>
+                        Already registered? <a onClick={() => go("login")} style={{cursor:"pointer"}}>Sign in</a>
+                    </p>
+                </div>
+            </section>
+        );
+    }
+
+    function usePasswordPair() {
+        const [pw, setPw] = useState(""); const [pw2, setPw2] = useState("");
+        const validate = (e) => {
+            if (pw.length < 8) e.password = "Password must be at least 8 characters.";
+            else if (!/[A-Z]/.test(pw) || !/[0-9]/.test(pw)) e.password = "Include at least one capital letter and one number.";
+            if (pw !== pw2) e.password2 = "Passwords do not match.";
+        };
+        return { pw, setPw, pw2, setPw2, validate };
+    }
+
+    function NgoForm({ go, toast, onAuth }) {
+        const [f, setF] = useState({ org:"", name:"", email:"", bio:"" });
+        const [areas, setAreas] = useState([]);
+        const [agree, setAgree] = useState(false);
+        const [err, setErr] = useState({});
+        const [busy, setBusy] = useState(false);
+        const set = k => e => setF({ ...f, [k]: e.target.value });
+        const pwd = usePasswordPair();
+
+        async function submit(e) {
+            e.preventDefault();
+            const x = {};
+            if (!f.org.trim()) x.org = "Organization name is required.";
+            if (!f.name.trim()) x.name = "Point-of-contact name is required.";
+            if (!isEmail(f.email)) x.email = "Enter a valid POC email address.";
+            if (!areas.length) x.areas = "Select at least one area of concern.";
+            if (!agree) x.agree = "You must confirm you are a registered non-profit.";
+            pwd.validate(x);
+            setErr(x); if (Object.keys(x).length) return;
+            setBusy(true);
+            try {
+                const u = await api.register({ role:ROLE.NGO, org:f.org.trim(), name:f.name.trim(),
+                    email:f.email.trim(), bio:f.bio.trim(), areas, password:pwd.pw });
+                await api.login(f.email.trim(), pwd.pw);
+                onAuth(u); toast(`Welcome, ${u.org}! Browse volunteers below.`); go("dashboard");
+            } catch (ex) { toast(ex.message, "err"); } finally { setBusy(false); }
+        }
+
+        return (
+            <form className="form card" onSubmit={submit} noValidate>
+                <div className="notice">Registration is free and always will be. We only ask for what we need to match you.</div>
+                <Field label="Organization name *" error={err.org}>
+                    <input className="input" value={f.org} onChange={set("org")} placeholder="Harvest Table Food Bank" />
+                </Field>
+                <div className="row">
+                    <Field label="Point-of-contact name *" error={err.name}>
+                        <input className="input" value={f.name} onChange={set("name")} placeholder="Tom Nguyen" />
+                    </Field>
+                    <Field label="POC email *" error={err.email}>
+                        <input className="input" type="email" value={f.email} onChange={set("email")} placeholder="tom@harvesttable.org" />
+                    </Field>
+                </div>
+                <Field label="Areas of concern *" error={err.areas} hint="Pick everything that worries you — volunteers filter on these.">
+                    <ChipPicker options={AREAS} value={areas} onChange={setAreas} />
+                </Field>
+                <Field label="Tell volunteers about your organization" hint="Optional, but a short note doubles your response rate.">
+                    <textarea value={f.bio} onChange={set("bio")} placeholder="We're a food bank with 6 shared workstations and no IT staff…" />
+                </Field>
+                <div className="row">
+                    <Field label="Password *" error={err.password}>
+                        <input className="input" type="password" value={pwd.pw} onChange={e=>pwd.setPw(e.target.value)} />
+                    </Field>
+                    <Field label="Confirm password *" error={err.password2}>
+                        <input className="input" type="password" value={pwd.pw2} onChange={e=>pwd.setPw2(e.target.value)} />
+                    </Field>
+                </div>
+                <label className="check">
+                    <input type="checkbox" checked={agree} onChange={e=>setAgree(e.target.checked)} />
+                    <span>I confirm this is a registered non-profit / charitable organization.</span>
+                </label>
+                {err.agree && <span className="err">{err.agree}</span>}
+                <button className="btn btn-primary btn-block" disabled={busy}>
+                    {busy ? "Creating account…" : "Register organization"}
+                </button>
+            </form>
+        );
+    }
+
+    function VolunteerForm({ go, toast, onAuth }) {
+        const [f, setF] = useState({ name:"", email:"", hours:"5", linkedin:"", bio:"" });
+        const [areas, setAreas] = useState([]);
+        const [bg, setBg] = useState("");
+        const [err, setErr] = useState({});
+        const [busy, setBusy] = useState(false);
+        const set = k => e => setF({ ...f, [k]: e.target.value });
+        const pwd = usePasswordPair();
+
+        async function submit(e) {
+            e.preventDefault();
+            const x = {};
+            if (!f.name.trim()) x.name = "Full name is required.";
+            if (!isEmail(f.email)) x.email = "Enter a valid email address.";
+            const h = Number(f.hours);
+            if (!h || h < 1 || h > 60) x.hours = "Enter between 1 and 60 hours per week.";
+            if (!/linkedin\.com\//i.test(f.linkedin)) x.linkedin = "Enter a full LinkedIn profile URL.";
+            if (!bg) x.bg = "Please declare your background-check status.";
+            if (!areas.length) x.areas = "Select at least one specialty.";
+            pwd.validate(x);
+            setErr(x); if (Object.keys(x).length) return;
+            setBusy(true);
+            try {
+                const u = await api.register({ role:ROLE.VOL, name:f.name.trim(), email:f.email.trim(),
+                    hours:h, backgroundCheck: bg === "yes", linkedin:f.linkedin.trim(),
+                    bio:f.bio.trim(), areas, password:pwd.pw });
+                await api.login(f.email.trim(), pwd.pw);
+                onAuth(u); toast(`Thanks ${u.name.split(" ")[0]} — organizations can now find you.`); go("dashboard");
+            } catch (ex) { toast(ex.message, "err"); } finally { setBusy(false); }
+        }
+
+        return (
+            <form className="form card" onSubmit={submit} noValidate>
+                <div className="notice">Volunteers keep full control of their commitment. Nothing is assigned to you automatically.</div>
+                <div className="row">
+                    <Field label="Full name *" error={err.name}>
+                        <input className="input" value={f.name} onChange={set("name")} placeholder="Amara Okonkwo" />
+                    </Field>
+                    <Field label="Email *" error={err.email}>
+                        <input className="input" type="email" value={f.email} onChange={set("email")} placeholder="you@example.com" />
+                    </Field>
+                </div>
+                <div className="row">
+                    <Field label="Hours available per week *" error={err.hours}>
+                        <input className="input" type="number" min="1" max="60" value={f.hours} onChange={set("hours")} />
+                    </Field>
+                    <Field label="Criminal background check *" error={err.bg} hint="Required before working with youth- or health-serving organizations.">
+                        <select value={bg} onChange={e=>setBg(e.target.value)}>
+                            <option value="">Select…</option>
+                            <option value="yes">Completed — valid within the last 12 months</option>
+                            <option value="no">Not yet completed / in progress</option>
+                        </select>
+                    </Field>
+                </div>
+                <Field label="LinkedIn profile (your résumé) *" error={err.linkedin}>
+                    <input className="input" value={f.linkedin} onChange={set("linkedin")} placeholder="https://linkedin.com/in/yourname" />
+                </Field>
+                <Field label="Specialties *" error={err.areas}>
+                    <ChipPicker options={AREAS} value={areas} onChange={setAreas} />
+                </Field>
+                <Field label="Short bio" hint="Optional. What kind of help do you most enjoy giving?">
+                    <textarea value={f.bio} onChange={set("bio")} placeholder="SOC analyst with 7 years in financial services…" />
+                </Field>
+                <div className="row">
+                    <Field label="Password *" error={err.password}>
+                        <input className="input" type="password" value={pwd.pw} onChange={e=>pwd.setPw(e.target.value)} />
+                    </Field>
+                    <Field label="Confirm password *" error={err.password2}>
+                        <input className="input" type="password" value={pwd.pw2} onChange={e=>pwd.setPw2(e.target.value)} />
+                    </Field>
+                </div>
+                <button className="btn btn-primary btn-block" disabled={busy}>
+                    {busy ? "Submitting…" : "Join as a volunteer"}
+                </button>
+            </form>
+        );
+    }
+
+    /* ---------- LOGIN / FORGOT ---------- */
+    function Login({ go, toast, onAuth }) {
+        const [email, setEmail] = useState(""); const [pw, setPw] = useState("");
+        const [err, setErr] = useState(""); const [busy, setBusy] = useState(false);
+        async function submit(e) {
+            e.preventDefault(); setErr(""); setBusy(true);
+            try { const u = await api.login(email, pw); onAuth(u); toast(`Signed in as ${displayName(u)}`); go("dashboard"); }
+            catch (ex) { setErr(ex.message); } finally { setBusy(false); }
+        }
+        return (
+            <section className="section">
+                <div className="wrap auth-wrap">
+                    <div className="center" style={{marginBottom:"1.4rem"}}>
+                        <h2>Sign in</h2>
+                        <p>Profiles are only visible to members.</p>
+                    </div>
+                    <form className="form card" onSubmit={submit} noValidate>
+                        <Field label="Email"><input className="input" type="email" value={email} onChange={e=>setEmail(e.target.value)} autoComplete="username" /></Field>
+                        <Field label="Password"><input className="input" type="password" value={pw} onChange={e=>setPw(e.target.value)} autoComplete="current-password" /></Field>
+                        {err && <span className="err">{err}</span>}
+                        <button className="btn btn-primary btn-block" disabled={busy}>{busy ? "Signing in…" : "Sign in"}</button>
+                        <div className="center small">
+                            <a onClick={() => go("forgot")} style={{cursor:"pointer"}}>Forgot your password?</a>
+                            <span className="muted"> · </span>
+                            <a onClick={() => go("register")} style={{cursor:"pointer"}}>Create an account</a>
+                        </div>
+                        <div className="divider"></div>
+                        <div className="small muted">
+                            <b>Demo accounts:</b><br/>
+                            Admin — admin@guardianlink.org / Admin123!<br/>
+                            NGO — tom@harvesttable.org / Password1!<br/>
+                            Volunteer — amara.sec@example.com / Password1!
+                        </div>
+                    </form>
+                </div>
+            </section>
+        );
+    }
+
+    function Forgot({ go, toast }) {
+        const [email, setEmail] = useState(""); const [sent, setSent] = useState(false); const [busy, setBusy] = useState(false);
+        async function submit(e) {
+            e.preventDefault();
+            if (!isEmail(email)) return toast("Enter a valid email address.", "err");
+            setBusy(true); await api.requestReset(email); setBusy(false); setSent(true);
+        }
+        return (
+            <section className="section">
+                <div className="wrap auth-wrap">
+                    <div className="center" style={{marginBottom:"1.4rem"}}><h2>Reset your password</h2></div>
+                    {sent ? (
+                        <div className="card center">
+                            <div className="icon" style={{margin:"0 auto 1rem"}}>✉️</div>
+                            <h3>Request received</h3>
+                            <p>If an account exists for <b>{email}</b>, a GuardianLink administrator has been notified
+                                and will issue a temporary password to that address.</p>
+                            <button className="btn btn-ghost" onClick={() => go("login")}>Back to sign in</button>
+                        </div>
+                    ) : (
+                        <form className="form card" onSubmit={submit} noValidate>
+                            <div className="notice">Submitting this form opens a reset ticket in the admin queue. An admin
+                                will set a temporary password and email it to you.</div>
+                            <Field label="Account email">
+                                <input className="input" type="email" value={email} onChange={e=>setEmail(e.target.value)} />
+                            </Field>
+                            <button className="btn btn-primary btn-block" disabled={busy}>{busy ? "Sending…" : "Request password reset"}</button>
+                            <div className="center small"><a onClick={() => go("login")} style={{cursor:"pointer"}}>Back to sign in</a></div>
+                        </form>
+                    )}
+                </div>
+            </section>
+        );
+    }
+
+    /* =======================================================================
+       6. AUTHENTICATED PAGES
+       ===================================================================== */
+    function ProfileCard({ user, me, onOpen }) {
+        const isVol = user.role === ROLE.VOL;
+        return (
+            <div className="card hov">
+                <div className="profile-head">
+                    <div className="avatar">{initials(displayName(user))}</div>
+                    <div style={{minWidth:0}}>
+                        <h3 style={{margin:0,fontSize:"1.08rem"}}>{displayName(user)}</h3>
+                        <span className="small muted">{isVol ? `${user.hours} hrs/week available` : `POC: ${user.name}`}</span>
+                    </div>
+                </div>
+                <div style={{display:"flex",gap:".4rem",flexWrap:"wrap",marginBottom:".8rem"}}>
+                    <Badge role={user.role} />
+                    {isVol && (user.backgroundCheck
+                        ? <span className="badge b-ok">✓ Background check</span>
+                        : <span className="badge b-warn">Check pending</span>)}
+                </div>
+                <p className="small" style={{minHeight:"2.6em"}}>
+                    {(user.bio || "No description provided.").slice(0, 120)}{(user.bio||"").length > 120 ? "…" : ""}
+                </p>
+                <div className="chips" style={{marginBottom:"1rem"}}>
+                    {(user.areas || []).slice(0,3).map(a => <span className="chip" key={a}>{a}</span>)}
+                    {(user.areas || []).length > 3 && <span className="chip">+{user.areas.length - 3}</span>}
+                </div>
+                <div className="actions">
+                    <button className="btn btn-ghost btn-sm" onClick={() => onOpen(user)}>View profile</button>
+                    {me.role !== ROLE.ADMIN &&
+                        <a className="btn btn-primary btn-sm" href={composeMessage(me, user)}>✉ Contact</a>}
+                </div>
+            </div>
+        );
+    }
+
+    function ProfileModal({ user, me, onClose }) {
+        const isVol = user.role === ROLE.VOL;
+        return (
+            <Modal title={displayName(user)} subtitle={ROLE_LABEL[user.role]} onClose={onClose}>
+                <div style={{display:"flex",gap:".4rem",flexWrap:"wrap",marginBottom:"1rem"}}>
+                    <Badge role={user.role} />
+                    {isVol && (user.backgroundCheck
+                        ? <span className="badge b-ok">✓ Background check complete</span>
+                        : <span className="badge b-warn">Background check pending</span>)}
+                </div>
+                <p>{user.bio || "No description provided."}</p>
+                <div className="divider"></div>
+                <div className="grid g2">
+                    <div><span className="small muted">Email</span><br/><b className="small">{user.email}</b></div>
+                    {isVol
+                        ? <div><span className="small muted">Weekly availability</span><br/><b className="small">{user.hours} hours</b></div>
+                        : <div><span className="small muted">Point of contact</span><br/><b className="small">{user.name}</b></div>}
+                    {isVol && <div><span className="small muted">Résumé</span><br/>
+                        <a className="small" href={user.linkedin} target="_blank" rel="noreferrer">LinkedIn profile ↗</a></div>}
+                    <div><span className="small muted">Member since</span><br/>
+                        <b className="small">{new Date(user.createdAt).toLocaleDateString()}</b></div>
+                </div>
+                <div className="divider"></div>
+                <span className="small muted">{isVol ? "Specialties" : "Areas of concern"}</span>
+                <div className="chips" style={{marginTop:".5rem"}}>
+                    {(user.areas || []).map(a => <span className="chip on" key={a}>{a}</span>)}
+                </div>
+                {me.role !== ROLE.ADMIN && (
+                    <>
+                        <div className="divider"></div>
+                        <a className="btn btn-primary btn-block" href={composeMessage(me, user)}>
+                            ✉ Email {displayName(user)}
+                        </a>
+                        <p className="small center muted" style={{marginTop:".6rem"}}>
+                            Opens your mail client with the subject and message pre-filled.
+                        </p>
+                    </>
+                )}
+            </Modal>
+        );
+    }
+
+    function Dashboard({ me, toast }) {
+        const [list, setList] = useState(null);
+        const [q, setQ] = useState(""); const [area, setArea] = useState(""); const [sort, setSort] = useState("new");
+        const [open, setOpen] = useState(null);
+
+        useEffect(() => {
+            api.directory(me).then(setList).catch(e => { toast(e.message, "err"); setList([]); });
+        }, [me]);
+
+        const shown = useMemo(() => {
+            if (!list) return [];
+            let r = list.filter(u => {
+                const hay = `${displayName(u)} ${u.bio || ""} ${(u.areas||[]).join(" ")}`.toLowerCase();
+                return hay.includes(q.toLowerCase()) && (!area || (u.areas||[]).includes(area));
+            });
+            if (sort === "hours") r = [...r].sort((a,b) => (b.hours||0) - (a.hours||0));
+            if (sort === "az") r = [...r].sort((a,b) => displayName(a).localeCompare(displayName(b)));
+            if (sort === "new") r = [...r].sort((a,b) => b.createdAt - a.createdAt);
+            return r;
+        }, [list, q, area, sort]);
+
+        const title = me.role === ROLE.NGO ? "Volunteer directory"
+            : me.role === ROLE.VOL ? "Organizations needing help"
+                : "All member profiles";
+        const sub = me.role === ROLE.ADMIN
+            ? "As an admin you can see every non-profit and volunteer profile."
+            : `Access control is active: you can only see ${me.role === ROLE.NGO ? "volunteer" : "non-profit"} profiles.`;
+
+        return (
+            <section className="section">
+                <div className="wrap">
+                    <div className="kicker">Signed in as {ROLE_LABEL[me.role]}</div>
+                    <h2>{title}</h2>
+                    <p>{sub}</p>
+                    <div className="toolbar">
+                        <input className="input" placeholder="Search by name, skill or keyword…" value={q} onChange={e=>setQ(e.target.value)} />
+                        <select value={area} onChange={e=>setArea(e.target.value)}>
+                            <option value="">All areas</option>
+                            {AREAS.map(a => <option key={a} value={a}>{a}</option>)}
+                        </select>
+                        <select value={sort} onChange={e=>setSort(e.target.value)}>
+                            <option value="new">Newest first</option>
+                            <option value="az">A → Z</option>
+                            {me.role !== ROLE.VOL && <option value="hours">Most hours available</option>}
+                        </select>
+                    </div>
+                    {list === null ? <div className="empty">Loading profiles…</div>
+                        : shown.length === 0 ? <div className="empty">No profiles match your filters yet.</div>
+                            : <div className="grid g3">
+                                {shown.map(u => <ProfileCard key={u.id} user={u} me={me} onOpen={setOpen} />)}
+                            </div>}
+                </div>
+                {open && <ProfileModal user={open} me={me} onClose={() => setOpen(null)} />}
+            </section>
+        );
+    }
+
+    /* ---------- ADMIN ---------- */
+    function AdminPanel({ me, toast, refreshMe, onLogout }) {
+        const [users, setUsers] = useState([]);
+        const [resets, setResets] = useState([]);
+        const [creating, setCreating] = useState(false);
+        const [pwTarget, setPwTarget] = useState(null);
+        const [q, setQ] = useState("");
+
+        const reload = () => {
+            api.allUsers().then(setUsers);
+            api.resetRequests().then(setResets);
+        };
+        useEffect(reload, []);
+
+        const act = async (fn, okMsg) => {
+            try { await fn(); toast(okMsg); reload(); refreshMe(); }
+            catch (e) { toast(e.message, "err"); }
+        };
+        const shown = users.filter(u =>
+            `${displayName(u)} ${u.email} ${u.role}`.toLowerCase().includes(q.toLowerCase()));
+        const adminCount = users.filter(u => u.role === ROLE.ADMIN).length;
+
+        return (
+            <section className="section">
+                <div className="wrap">
+                    <div className="kicker">Admin console</div>
+                    <h2>Platform management</h2>
+                    <p>{users.length} total accounts · {adminCount} admin{adminCount!==1?"s":""} · the platform
+                        always keeps at least one admin.</p>
+
+                    {resets.length > 0 && (
+                        <div className="card" style={{marginBottom:"1.5rem",borderColor:"rgba(255,182,72,.4)"}}>
+                            <h3>🔑 Password reset queue ({resets.length})</h3>
+                            {resets.map(r => {
+                                const u = users.find(x => x.email.toLowerCase() === r.email.toLowerCase());
+                                return (
+                                    <div key={r.id} style={{display:"flex",gap:".6rem",alignItems:"center",flexWrap:"wrap",padding:".5rem 0",borderBottom:"1px dashed var(--line)"}}>
+                                        <b className="small">{r.email}</b>
+                                        <span className="small muted">{new Date(r.at).toLocaleString()}</span>
+                                        <div className="actions" style={{marginLeft:"auto"}}>
+                                            {u && <button className="btn btn-ghost btn-sm" onClick={() => setPwTarget(u)}>Set temp password</button>}
+                                            <button className="btn btn-ghost btn-sm" onClick={() => act(() => api.resolveReset(r.id), "Request closed.")}>Dismiss</button>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+
+                    <div className="toolbar">
+                        <input className="input" placeholder="Search accounts…" value={q} onChange={e=>setQ(e.target.value)} />
+                        <button className="btn btn-primary" onClick={() => setCreating(true)}>+ Create user profile</button>
+                    </div>
+
+                    <div className="table-scroll">
+                        <table>
+                            <thead><tr><th>Name</th><th>Email</th><th>Type</th><th>Details</th><th>Actions</th></tr></thead>
+                            <tbody>
+                            {shown.map(u => (
+                                <tr key={u.id}>
+                                    <td><b>{displayName(u)}</b>{u.id === me.id && <span className="small muted"> (you)</span>}</td>
+                                    <td className="small muted">{u.email}</td>
+                                    <td><Badge role={u.role} /></td>
+                                    <td className="small muted">
+                                        {u.role === ROLE.VOL ? `${u.hours} hrs/wk · ${u.backgroundCheck ? "BG ✓" : "BG ✗"}`
+                                            : u.role === ROLE.NGO ? `${(u.areas||[]).length} area(s)` : "Full access"}
+                                    </td>
+                                    <td>
+                                        <div className="actions">
+                                            <button className="btn btn-ghost btn-sm" onClick={() => setPwTarget(u)}>Reset password</button>
+                                            {u.role !== ROLE.ADMIN
+                                                ? <button className="btn btn-ghost btn-sm"
+                                                          onClick={() => act(() => api.setRole(u.id, ROLE.ADMIN), `${displayName(u)} is now an admin.`)}>Make admin</button>
+                                                : <button className="btn btn-ghost btn-sm"
+                                                          onClick={() => act(() => api.setRole(u.id, ROLE.VOL), `${displayName(u)} is no longer an admin.`)}>Revoke admin</button>}
+                                            <button className="btn btn-danger btn-sm" onClick={async () => {
+                                                if (!confirm(`Delete ${displayName(u)}? This cannot be undone.`)) return;
+                                                try {
+                                                    await api.deleteUser(u.id);
+                                                    toast("Account deleted.");
+                                                    if (u.id === me.id) return onLogout();
+                                                    reload();
+                                                } catch (e) { toast(e.message, "err"); }
+                                            }}>Delete</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                {creating && <CreateUserModal onClose={() => setCreating(false)}
+                                              onDone={(msg) => { setCreating(false); toast(msg); reload(); }} toast={toast} />}
+                {pwTarget && <ResetPasswordModal user={pwTarget} me={me} onClose={() => setPwTarget(null)}
+                                                 onDone={(msg) => { setPwTarget(null); toast(msg); reload(); }} toast={toast} />}
+
+            </section>
+        );
+    }
+
+    function CreateUserModal({ onClose, onDone, toast }) {
+        const [f, setF] = useState({ role:ROLE.VOL, name:"", org:"", email:"", password:"TempPass1!" });
+        const set = k => e => setF({ ...f, [k]: e.target.value });
+        const [busy, setBusy] = useState(false);
+        async function submit(e) {
+            e.preventDefault();
+            if (!f.name.trim() || !isEmail(f.email)) return toast("Name and a valid email are required.", "err");
+            if (f.role === ROLE.NGO && !f.org.trim()) return toast("Organization name is required.", "err");
+            if (f.password.length < 8) return toast("Temporary password must be 8+ characters.", "err");
+            setBusy(true);
+            try {
+                const base = { role:f.role, name:f.name.trim(), email:f.email.trim(), password:f.password, areas:[], bio:"" };
+                const extra = f.role === ROLE.VOL ? { hours:5, backgroundCheck:false, linkedin:"" }
+                    : f.role === ROLE.NGO ? { org:f.org.trim() } : {};
+                await api.register({ ...base, ...extra });
+                onDone(`Created ${f.email}. Share the temporary password securely.`);
+            } catch (ex) { toast(ex.message, "err"); } finally { setBusy(false); }
+        }
+        return (
+            <Modal title="Create a basic user profile" subtitle="The user can complete their details after signing in." onClose={onClose}>
+                <form className="form" onSubmit={submit} noValidate>
+                    <Field label="User type">
+                        <select value={f.role} onChange={set("role")}>
+                            <option value={ROLE.VOL}>Volunteer</option>
+                            <option value={ROLE.NGO}>Non-Profit / NGO</option>
+                            <option value={ROLE.ADMIN}>Admin</option>
+                        </select>
+                    </Field>
+                    {f.role === ROLE.NGO &&
+                        <Field label="Organization name"><input className="input" value={f.org} onChange={set("org")} /></Field>}
+                    <div className="row">
+                        <Field label="Contact name"><input className="input" value={f.name} onChange={set("name")} /></Field>
+                        <Field label="Email"><input className="input" type="email" value={f.email} onChange={set("email")} /></Field>
+                    </div>
+                    <Field label="Temporary password" hint="The user should change this on first sign-in.">
+                        <input className="input" value={f.password} onChange={set("password")} />
+                    </Field>
+                    <button className="btn btn-primary btn-block" disabled={busy}>{busy ? "Creating…" : "Create account"}</button>
+                </form>
+            </Modal>
+        );
+    }
+
+    function ResetPasswordModal({ user, me, onClose, onDone, toast }) {
+        const isSelf = String(user.id) === String(me.id);
+        const [curPw, setCurPw] = useState("");
+        const [pw, setPw] = useState("TempPass1!");
+        const [busy, setBusy] = useState(false);
+
+        async function submit(e) {
+            e.preventDefault();
+            if (pw.length < 8) return toast("Password must be at least 8 characters.", "err");
+            if (isSelf && !curPw) return toast("Enter your current password.", "err");
+            setBusy(true);
+            try {
+                await api.setPassword(user.id, pw, isSelf ? curPw : undefined);
+                onDone(`Password updated for ${user.email}.`);
+            } catch (ex) { toast(ex.message, "err"); }
+            finally { setBusy(false); }
+        }
+
+        return (
+            <Modal title={isSelf ? "Change your password" : "Reset password"} subtitle={user.email} onClose={onClose}>
+                <form className="form" onSubmit={submit} noValidate>
+                    <div className="notice">
+                        {isSelf
+                            ? "You are changing your own password, so your current password is required."
+                            : "In production this would also trigger a transactional email and force a change at next login."}
+                    </div>
+                    {isSelf && (
+                        <Field label="Your current password *">
+                            <input className="input" type="password" value={curPw}
+                                   autoComplete="current-password"
+                                   onChange={e=>setCurPw(e.target.value)} />
+                        </Field>
+                    )}
+                    <Field label={isSelf ? "New password" : "New temporary password"}>
+                        <input className="input" value={pw} onChange={e=>setPw(e.target.value)} />
+                    </Field>
+                    <button className="btn btn-primary btn-block" disabled={busy}>
+                        {busy ? "Saving…" : "Set password"}
+                    </button>
+                </form>
+            </Modal>
+        );
+    }
+
+
+    /* ---------- ACCOUNT ---------- */
+    function Account({ me, toast, onLogout, refreshMe }) {
+        const [curPw, setCurPw] = useState("");
+        const [pw, setPw]   = useState("");
+        const [pw2, setPw2] = useState("");
+        const [busy, setBusy] = useState(false);
+
+        async function changePw(e) {
+            e.preventDefault();
+            if (!curPw) return toast("Enter your current password.", "err");
+            if (pw.length < 8) return toast("New password must be at least 8 characters.", "err");
+            if (!/[A-Z]/.test(pw) || !/[0-9]/.test(pw))
+                return toast("Include at least one capital letter and one number.", "err");
+            if (pw !== pw2) return toast("New passwords do not match.", "err");
+            if (pw === curPw) return toast("New password must be different from your current one.", "err");
+
+            setBusy(true);
+            try {
+                await api.setPassword(me.id, pw, curPw);
+                setCurPw(""); setPw(""); setPw2("");
+                toast("Password changed successfully.");
+            } catch (ex) {
+                toast(ex.message, "err");
+            } finally {
+                setBusy(false);
+            }
+        }
+
+        async function deleteMe() {
+            if (!confirm("Permanently delete your GuardianLink account? This cannot be undone.")) return;
+            try { await api.deleteUser(me.id); toast("Your account has been deleted."); onLogout(); }
+            catch (e) { toast(e.message, "err"); }
+        }
+
+        return (
+            <section className="section">
+                <div className="wrap form-wrap">
+                    <div className="kicker">My account</div>
+                    <h2>{displayName(me)}</h2>
+                    <div className="card" style={{marginBottom:"1.2rem"}}>
+                        <div className="profile-head">
+                            <div className="avatar">{initials(displayName(me))}</div>
+                            <div><b>{me.email}</b><br/><Badge role={me.role} /></div>
+                        </div>
+                        {me.role === ROLE.VOL && <p className="small">Availability: {me.hours} hrs/week · Background check: {me.backgroundCheck ? "complete" : "pending"}</p>}
+                        <div className="chips">{(me.areas||[]).map(a => <span className="chip on" key={a}>{a}</span>)}</div>
+                    </div>
+
+                    <form className="form card" onSubmit={changePw} noValidate>
+                        <h3>Change password</h3>
+                        <div className="notice">For your security, confirm your current password before choosing a
+                            new one. This prevents anyone using a hijacked session from locking you out.</div>
+                        <Field label="Current password *">
+                            <input className="input" type="password" value={curPw}
+                                   autoComplete="current-password"
+                                   onChange={e=>setCurPw(e.target.value)} />
+                        </Field>
+                        <div className="row">
+                            <Field label="New password *" hint="Min 8 characters, one capital, one number.">
+                                <input className="input" type="password" value={pw}
+                                       autoComplete="new-password"
+                                       onChange={e=>setPw(e.target.value)} />
+                            </Field>
+                            <Field label="Confirm new password *">
+                                <input className="input" type="password" value={pw2}
+                                       autoComplete="new-password"
+                                       onChange={e=>setPw2(e.target.value)} />
+                            </Field>
+                        </div>
+                        <button className="btn btn-primary" disabled={busy}>
+                            {busy ? "Updating…" : "Update password"}
+                        </button>
+                    </form>
+
+                    <div className="card" style={{marginTop:"1.2rem",borderColor:"rgba(255,93,108,.35)"}}>
+                        <h3 style={{color:"var(--danger)"}}>Danger zone</h3>
+                        <p className="small">Deleting your account removes your profile from the directory immediately.
+                            {me.role === ROLE.ADMIN && " The last remaining admin cannot be deleted."}</p>
+                        <button className="btn btn-danger" onClick={deleteMe}>Delete my account</button>
+                    </div>
+                </div>
+            </section>
+        );
+    }
+
+
+    /* =======================================================================
+       7. SHELL
+       ===================================================================== */
+    function App() {
+        const [me, setMe] = useState(null);
+        const [ready, setReady] = useState(false);
+        const [view, setView] = useState("home");
+        const [params, setParams] = useState({});
+        const [menu, setMenu] = useState(false);
+        const [toasts, setToasts] = useState([]);
+
+        useEffect(() => { api.currentUser().then(u => { setMe(u); setReady(true); }); }, []);
+        useEffect(() => { window.scrollTo({ top:0, behavior:"smooth" }); setMenu(false); }, [view]);
+
+        const toast = (msg, kind) => {
+            const id = uid();
+            setToasts(t => [...t, { id, msg, kind }]);
+            setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 4200);
+        };
+        const go = (v, p = {}) => {
+            const guarded = ["dashboard","admin","account"];
+            if (guarded.includes(v) && !me) { toast("Please sign in to continue.", "err"); setView("login"); return; }
+            if (v === "admin" && me?.role !== ROLE.ADMIN) { toast("Admins only.", "err"); return; }
+            setParams(p); setView(v);
+        };
+        const logout = async () => { await api.logout(); setMe(null); setView("home"); toast("Signed out."); };
+        const refreshMe = () => api.currentUser().then(setMe);
+
+        if (!ready) return <div className="empty" style={{margin:"20vh auto",maxWidth:"320px"}}>Loading GuardianLink…</div>;
+
+        const link = (id, label) => (
+            <button className={"nav-btn " + (view === id ? "active" : "")} onClick={() => go(id)}>{label}</button>
+        );
+
+        return (
+            <>
+                <nav className="nav">
+                    <div className="wrap nav-in">
+                        <div className="brand" onClick={() => go("home")}><Shield /> GuardianLink</div>
+                        <button className="burger" onClick={() => setMenu(m => !m)} aria-label="Menu">☰</button>
+                        <div className={"nav-links " + (menu ? "open" : "")}>
+                            {link("home","Home")}
+                            {me && link("dashboard", me.role === ROLE.NGO ? "Find volunteers"
+                                : me.role === ROLE.VOL ? "Find organizations" : "Directory")}
+                            {me?.role === ROLE.ADMIN && link("admin","Admin")}
+                            {me ? (
+                                <>
+                                    {link("account","My account")}
+                                    <button className="btn btn-ghost btn-sm" onClick={logout}>Sign out</button>
+                                </>
+                            ) : (
+                                <>
+                                    {link("login","Sign in")}
+                                    <button className="btn btn-primary btn-sm" onClick={() => go("register")}>Get started</button>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </nav>
+
+                <main>
+                    {view === "home"      && <Home go={go} />}
+                    {view === "register"  && <Register go={go} toast={toast} onAuth={setMe} initialTab={params.tab} />}
+                    {view === "login"     && <Login go={go} toast={toast} onAuth={setMe} />}
+                    {view === "forgot"    && <Forgot go={go} toast={toast} />}
+                    {view === "dashboard" && me && <Dashboard me={me} toast={toast} />}
+                    {view === "admin"     && me?.role === ROLE.ADMIN &&
+                        <AdminPanel me={me} toast={toast} refreshMe={refreshMe} onLogout={logout} />}
+                    {view === "account"   && me && <Account me={me} toast={toast} onLogout={logout} refreshMe={refreshMe} />}
+                </main>
+
+                <footer className="footer">
+                    <div className="wrap foot-grid">
+                        <div>
+                            <div className="brand" style={{marginBottom:".4rem"}}><Shield /> GuardianLink</div>
+                            <span className="small muted">Free cybersecurity support for non-profits.</span>
+                        </div>
+                        <div className="small muted">© {new Date().getFullYear()} GuardianLink · Capstone project</div>
+                    </div>
+                </footer>
+
+                <div className="toasts">
+                    {toasts.map(t => <div key={t.id} className={"toast " + (t.kind === "err" ? "err" : "")}>{t.msg}</div>)}
+                </div>
+            </>
+        );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

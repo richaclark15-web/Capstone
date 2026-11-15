@@ -1,0 +1,950 @@
+%=======================================================================
+%  GuardianLink -- Capstone Project Document
+%  Compile:  pdflatex GuardianLink-Capstone.tex   (run twice for TOC)
+%=======================================================================
+\documentclass[11pt,letterpaper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{fancyvrb}
+\usepackage{float}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=black,urlcolor=blue,
+            citecolor=black]{hyperref}
+
+%----------------------------- styling --------------------------------
+\definecolor{glnavy}{RGB}{20,40,80}
+
+\titleformat{\section}{\Large\bfseries\color{glnavy}}{\thesection}{1em}{}
+\titleformat{\subsection}{\large\bfseries}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries}{\thesubsubsection}{1em}{}
+\titlespacing*{\section}{0pt}{18pt}{8pt}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\small GuardianLink --- Capstone Project Document}
+\rhead{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\setlist[itemize]{itemsep=2pt,topsep=4pt,parsep=0pt}
+\setlist[enumerate]{itemsep=2pt,topsep=4pt,parsep=0pt}
+
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcommand{\wf}[1]{\begin{figure}[H]\centering
+  \BVerbatimInput{#1}\end{figure}}
+
+%--------------------------- title page -------------------------------
+\begin{document}
+
+\begin{titlepage}
+\centering
+\vspace*{5cm}
+{\Huge\bfseries\color{glnavy} GuardianLink\par}
+\vspace{0.6cm}
+{\LARGE Capstone Project Document\par}
+\vspace{2.5cm}
+{\large
+\begin{tabular}{rl}
+\textbf{Student:}        & [Your Name]\\[6pt]
+\textbf{Submission date:}& [Date]\\[6pt]
+\textbf{Repository:}     & \url{https://github.com/your-username/guardianlink}\\[6pt]
+\textbf{Walk-through:}   & \url{https://jmp.sh/your-link}\\
+\end{tabular}\par}
+\vfill
+{\small A full-stack web platform connecting volunteer cybersecurity\\
+specialists with non-profit organizations, at no cost to the non-profit.\par}
+\vspace{1cm}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+%=======================================================================
+\section{Overview and Summary}
+%=======================================================================
+
+\subsection{Synopsis}
+
+GuardianLink is a full-stack web platform that connects volunteer
+cybersecurity specialists with non-profit organizations and NGOs that need
+security assistance but cannot afford commercial consulting rates. The
+platform allows both groups to register, maintain a profile, browse the
+opposite user type, and initiate contact --- all at no cost to the
+non-profit.
+
+The application is a single Node.js project: an Express REST API backed by
+MongoDB, serving a React single-page frontend. Authentication is JWT-based
+with role-based access control enforcing that NGOs and volunteers can only
+discover each other, never their own kind.
+
+\subsection{Purpose}
+
+Non-profits hold sensitive donor, client, and beneficiary data but rarely
+have the budget for a security audit, policy review, or incident-response
+plan. Meanwhile, many working security professionals are willing to donate a
+few hours a week but have no reliable channel for finding organizations that
+need them. GuardianLink removes the discovery problem on both sides.
+
+\subsection{Goals}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}c X l@{}}
+\toprule
+\textbf{\#} & \textbf{Goal} & \textbf{Status}\\
+\midrule
+1  & Public landing page explaining who we are, what we do, why, and our partners & Complete\\
+2  & Separate registration flows capturing NGO and volunteer fields & Complete\\
+3  & Three enforced user roles: NGO, Volunteer, Admin & Complete\\
+4  & Login required to view any profile & Complete\\
+5  & Cross-role visibility only (NGO / Volunteer) & Complete\\
+6  & NGO-to-volunteer communication channel & Complete (mailto)\\
+7  & Forgot-password flow & Complete\\
+8  & Admin can delete users, assign roles, reset passwords, create profiles & Complete\\
+9  & At least one admin exists at all times & Complete\\
+10 & Users can delete their own account, and only their own & Complete\\
+11 & Responsive desktop and mobile layout & Complete\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{Requirements Coverage}
+
+\subsubsection*{Information collected from NGOs / Non-Profits}
+\begin{itemize}
+  \item Point-of-contact email
+  \item Organization name
+  \item Areas of concern
+  \item Password, plus an optional description field
+\end{itemize}
+
+\subsubsection*{Information collected from Cybersecurity Volunteers}
+\begin{itemize}
+  \item Name
+  \item Email
+  \item Hours available per week
+  \item Criminal background check status
+  \item LinkedIn profile URL (serves as the resume)
+  \item Areas of expertise, plus an optional bio
+\end{itemize}
+
+\subsubsection*{User types}
+\begin{enumerate}
+  \item \textbf{NGO / Small Company} --- registers via the Organization
+        Registration form; browses the volunteer directory; contacts volunteers.
+  \item \textbf{Volunteer (Cybersecurity Specialist)} --- registers via the
+        Volunteer Registration form; browses the NGO directory; responds to requests.
+  \item \textbf{Admin} --- manages all users and oversees platform operations.
+        The system refuses any operation that would leave zero admins.
+\end{enumerate}
+
+%=======================================================================
+\section{Wireframe Diagrams and Planning Documents}
+%=======================================================================
+
+\subsection{Site Map}
+
+\begin{figure}[H]
+\centering
+\begin{BVerbatim}[fontsize=\footnotesize]
+                        +--------------+
+                        |   Landing    |   (public)
+                        |    / Home    |
+                        +------+-------+
+             +-----------------+-----------------+
+             |                 |                 |
+             v                 v                 v
+      +------------+    +------------+    +------------+
+      |   About    |    |  Register  |    |   Login    |
+      |  (public)  |    |  (public)  |    |  (public)  |
+      +------------+    +-----+------+    +-----+------+
+                              |                 |
+                   +----------+------+          |   +-----------------+
+                   |                 |          |   | Forgot Password |
+                   v                 v          |   |     (modal)     |
+            +-------------+  +--------------+   |   +-----------------+
+            |     NGO     |  |  Volunteer   |   |
+            |  Register   |  |   Register   |   |
+            +------+------+  +------+-------+   |
+                   +--------+-------+           |
+                            |                   |
+                            v                   |
+          ============ AUTH WALL ===============+=============
+                            |                   |
+                            v                   v
+                  +------------------------------+
+                  |          Directory           |
+                  |     (opposite role only)     |
+                  +---------------+--------------+
+                                  |
+                                  v
+                  +------------------------------+
+                  |        Profile Detail        |
+                  |    [ Contact via Email ]     |
+                  +------------------------------+
+
+             +----------------+----------------+
+             v                v                v
+      +------------+   +------------+   +----------------+
+      |  Account   |   | Edit Prof. |   |  Admin Panel   |
+      | (password, |   |            |   |  (admin only)  |
+      |  delete)   |   |            |   +----------------+
+      +------------+   +------------+
+\end{BVerbatim}
+\caption{Application site map. Everything below the auth wall requires a valid JWT.}
+\end{figure}
+
+\subsection{Wireframe --- Landing Page}
+
+\begin{figure}[H]
+\centering
+\begin{BVerbatim}[fontsize=\footnotesize]
++--------------------------------------------------------------+
+|  GuardianLink        About   How It Works   [Log in] [Join]  |
++--------------------------------------------------------------+
+|                                                              |
+|         Free cybersecurity help for non-profits.             |
+|         Donated by professionals who care.                   |
+|                                                              |
+|         [ I'm a Non-Profit ]   [ I'm a Volunteer ]           |
+|                                                              |
++--------------------------------------------------------------+
+|  WHO WE ARE          WHAT WE DO           WHY WE DO IT       |
+|  +------------+      +------------+       +------------+     |
+|  | A network  |      | Match NGOs |       | Non-profits|     |
+|  | of security|      | with vetted|       | hold       |     |
+|  | specialists|      | specialists|       | sensitive  |     |
+|  | who donate |      | at no cost |       | data with  |     |
+|  | their time |      |            |       | no budget  |     |
+|  +------------+      +------------+       +------------+     |
++--------------------------------------------------------------+
+|  OUR PARTNERS                                                |
+|  [ Logo ]  [ Logo ]  [ Logo ]  [ Logo ]                      |
++--------------------------------------------------------------+
+|  (c) GuardianLink          Privacy  |  Contact               |
++--------------------------------------------------------------+
+\end{BVerbatim}
+\caption{Landing page covering all four required About subsections.}
+\end{figure}
+
+\subsection{Wireframe --- Registration (role-switched form)}
+
+\begin{figure}[H]
+\centering
+\begin{BVerbatim}[fontsize=\footnotesize]
++--------------------------------------------+
+|            Create your account             |
+|                                            |
+|   ( o ) Non-Profit      (   ) Volunteer    |
+|   --------------------------------------   |
+|                                            |
+|   Organization Name  [__________________]  |
+|   Contact Email      [__________________]  |
+|   Password           [__________________]  |
+|   Areas of Concern   [ ] Network Security  |
+|                      [ ] Phishing / Email  |
+|                      [ ] Policy & Training |
+|                      [ ] Incident Response |
+|   Short Description  [__________________]  |
+|                      [__________________]  |
+|                                            |
+|            [   Create Account   ]          |
+|       Already have an account? Log in      |
++--------------------------------------------+
+
+    When "Volunteer" is selected, the lower
+    half swaps to:
+
+|   Full Name          [__________________]  |
+|   Email              [__________________]  |
+|   Password           [__________________]  |
+|   Hours / week       [____]   (1-60)       |
+|   Areas of Expertise [ ] Pen Testing ...   |
+|   LinkedIn URL       [__________________]  |
+|   [X] I consent to a criminal background   |
+|       check                                |
+|   Short Bio          [__________________]  |
+\end{BVerbatim}
+\caption{Single registration component; the role radio swaps the field set.}
+\end{figure}
+
+\subsection{Wireframe --- Directory (post-login)}
+
+\begin{figure}[H]
+\centering
+\begin{BVerbatim}[fontsize=\footnotesize]
++--------------------------------------------------------------+
+| GuardianLink    Directory   Account   [Admin]      Log out   |
++--------------------------------------------------------------+
+|  Volunteers                        Search [____________]     |
+|  Filter: [ All areas  v ]   [ ] Background-checked only      |
++--------------------------------------------------------------+
+|  +--------------------+  +--------------------+              |
+|  | Amara Okafor       |  | Devin Reyes        |              |
+|  | Pen Testing, IR    |  | Policy, Training   |              |
+|  | 10 hrs/week        |  | 5 hrs/week         |              |
+|  | [X] Background chk |  | [ ] Not checked    |              |
+|  | [View] [Contact]   |  | [View] [Contact]   |              |
+|  +--------------------+  +--------------------+              |
+|                                                              |
+|  +--------------------+  +--------------------+              |
+|  | ...                |  | ...                |              |
+|  +--------------------+  +--------------------+              |
++--------------------------------------------------------------+
+
+   An NGO account never sees NGO cards here; a volunteer
+   account sees only NGO cards. Enforced server-side.
+\end{BVerbatim}
+\caption{Role-filtered directory. Visibility is derived from the JWT.}
+\end{figure}
+
+\subsection{Wireframe --- Admin Panel}
+
+\begin{figure}[H]
+\centering
+\begin{BVerbatim}[fontsize=\footnotesize]
++--------------------------------------------------------------+
+|  Admin Panel                            [ + Create User ]    |
++--------------------------------------------------------------+
+|  Name          Email              Role       Actions         |
+| ------------------------------------------------------------ |
+|  Site Admin    admin@guardi...    Admin v   [Reset] [Del]    |
+|  Tom Alvarez   tom@harvest...     NGO   v   [Reset] [Del]    |
+|  Amara Okafor  amara.sec@...      Vol.  v   [Reset] [Del]    |
++--------------------------------------------------------------+
+|  PASSWORD RESET REQUESTS                                     |
+|  tom@harvesttable.org    2 hours ago    [Resolve] [Dismiss]  |
++--------------------------------------------------------------+
+
+   Attempting to delete or demote the last remaining admin
+   returns 409 Conflict and the row is left unchanged.
+\end{BVerbatim}
+\caption{Admin panel with the last-admin guard.}
+\end{figure}
+
+\subsection{Project Plan --- Build Order}
+
+Components were built bottom-up so each layer could be tested before the
+next depended on it.
+
+\subsubsection*{Component 1 --- Data Model and Database}
+\textit{Subtasks}
+\begin{itemize}
+  \item Install and connect MongoDB (local service, later MongoDB Atlas)
+  \item Define the \texttt{User} schema with role-discriminating fields
+  \item Define the \texttt{ResetRequest} schema
+  \item Add a \texttt{pre("save")} hook hashing passwords with bcrypt at 12 rounds
+  \item Add a \texttt{comparePassword} instance method
+  \item Add a \texttt{toSafeJSON} method stripping the hash and mapping
+        \texttt{\_id} to \texttt{id}
+  \item Write \texttt{seed.js} creating one admin, one NGO, and one volunteer
+\end{itemize}
+\textit{Acceptance criteria}
+\begin{itemize}
+  \item \texttt{node seed.js} completes without error and creates exactly three users
+  \item Every stored password matches the bcrypt pattern below and is 60 characters long
+  \item No API response anywhere contains a \texttt{password} field
+  \item Re-running the seed is idempotent --- it does not produce duplicates
+\end{itemize}
+\begin{Verbatim}[fontsize=\small,xleftmargin=1.5em]
+/^\$2[aby]\$12\$/
+\end{Verbatim}
+
+\subsubsection*{Component 2 --- Authentication}
+\textit{Subtasks}
+\begin{itemize}
+  \item \texttt{POST /api/auth/register} for both roles
+  \item \texttt{POST /api/auth/login} issuing a signed JWT
+  \item \texttt{GET /api/auth/me} returning the current user
+  \item \texttt{requireAuth} middleware verifying the bearer token
+  \item \texttt{passwordChangedAt} comparison against the token \texttt{iat} claim
+\end{itemize}
+\textit{Acceptance criteria}
+\begin{itemize}
+  \item Correct credentials return a token and a safe user object
+  \item Wrong password and unknown email return an identical 401 message, so the
+        endpoint cannot be used to enumerate registered emails
+  \item A request with no token, a malformed token, or an expired token returns 401
+  \item A token minted before a password change is rejected on the next request
+\end{itemize}
+
+\subsubsection*{Component 3 --- Role-Based Access Control}
+\textit{Subtasks}
+\begin{itemize}
+  \item \texttt{requireRole(...roles)} middleware
+  \item \texttt{GET /api/directory} filtering by the opposite role
+  \item Derive visibility from the JWT, never from a client-supplied query parameter
+\end{itemize}
+\textit{Acceptance criteria}
+\begin{itemize}
+  \item An NGO token returns only volunteers; a volunteer token only NGOs;
+        an admin token everyone
+  \item Tampering with a request to ask for same-role profiles still returns
+        the correct filtered set
+  \item Admin-only routes return 403 for NGO and volunteer tokens
+\end{itemize}
+
+\subsubsection*{Component 4 --- Public Pages and Registration UI}
+\textit{Subtasks}
+\begin{itemize}
+  \item Landing page with Who / What / Why / Partners sections
+  \item Role-switching registration form
+  \item Client-side validation before submit
+  \item Responsive layout down to 375\,px
+\end{itemize}
+\textit{Acceptance criteria}
+\begin{itemize}
+  \item All four About subsections are present and readable
+  \item Switching the role radio swaps the correct field set
+  \item Every required NGO and volunteer field from the brief is captured and persisted
+  \item No horizontal scrolling at 375\,px, 768\,px, or 1440\,px
+\end{itemize}
+
+\subsubsection*{Component 5 --- Directory and Profile Views}
+\textit{Subtasks}
+\begin{itemize}
+  \item Directory grid with search and filter
+  \item Profile detail view
+  \item \texttt{mailto:} contact button with prefilled recipient, subject, and body
+\end{itemize}
+\textit{Acceptance criteria}
+\begin{itemize}
+  \item Visiting the directory while logged out redirects to login
+  \item The contact button opens the default mail client with all three fields populated
+  \item Search filters by name, organization, and area of concern
+\end{itemize}
+
+\subsubsection*{Component 6 --- Account Self-Service}
+\textit{Subtasks}
+\begin{itemize}
+  \item Profile editing
+  \item Self-service password change requiring the current password
+  \item Self-deletion
+\end{itemize}
+\textit{Acceptance criteria}
+\begin{itemize}
+  \item Changing a password without the correct current password fails with 401
+  \item After a successful change, the old password no longer works and the
+        old token is rejected
+  \item A user can delete their own account and no other
+\end{itemize}
+
+\subsubsection*{Component 7 --- Forgot Password}
+\textit{Subtasks}
+\begin{itemize}
+  \item Public request form creating a \texttt{ResetRequest}
+  \item Admin queue listing outstanding requests
+  \item Admin force-set that bypasses the current-password requirement
+\end{itemize}
+\textit{Acceptance criteria}
+\begin{itemize}
+  \item Submitting a request for an unknown email returns the same confirmation
+        as a known one, revealing nothing
+  \item The request appears in the admin queue
+  \item After an admin reset, the user can log in with the new password
+\end{itemize}
+
+\subsubsection*{Component 8 --- Admin Panel}
+\textit{Subtasks}
+\begin{itemize}
+  \item User table with role dropdown and delete action
+  \item Create-user form
+  \item Password reset modal with \texttt{isSelf} detection
+  \item Last-admin guards on delete and demote
+\end{itemize}
+\textit{Acceptance criteria}
+\begin{itemize}
+  \item Deleting or demoting the only admin returns 409 and changes nothing
+  \item Creating a user does not invalidate the admin's own session
+  \item An admin resetting their own password is prompted for the current one;
+        resetting another user's password is not
+\end{itemize}
+
+\subsubsection*{Component 9 --- Hardening and Deployment}
+\textit{Subtasks}
+\begin{itemize}
+  \item \texttt{helmet}, \texttt{express-rate-limit}, \texttt{express-mongo-sanitize}
+  \item Centralised error handler
+  \item Migrate to MongoDB Atlas
+  \item Deploy to Render binding \texttt{0.0.0.0}
+\end{itemize}
+\textit{Acceptance criteria}
+\begin{itemize}
+  \item Repeated failed logins are throttled
+  \item A NoSQL injection payload in the login body fails to authenticate
+  \item No stack traces are returned to clients in production
+  \item The deployed URL serves the app and all routes behave as they do locally
+\end{itemize}
+
+\subsection{Acceptance Criteria --- Whole Project}
+
+The project is complete when all of the following hold on the deployed instance:
+
+\begin{enumerate}
+  \item An unauthenticated visitor can read the About content but reach no
+        profile data by any route.
+  \item An NGO and a volunteer can each register with every field required by
+        the brief, and those values are correctly persisted and redisplayed.
+  \item Each role sees only the opposite role in the directory, enforced on the server.
+  \item An NGO can open a prefilled email to a volunteer in one click.
+  \item A user who has forgotten their password can regain access through the
+        admin-mediated flow.
+  \item An admin can create, delete, promote, demote, and reset the password of any user.
+  \item The system refuses every operation that would leave the platform with no admin.
+  \item A regular user can delete their own account and cannot affect any other account.
+  \item Passwords are never stored in plaintext, never returned by the API, and never logged.
+  \item The UI is usable on both a phone and a desktop.
+  \item The full source is on GitHub with a meaningful commit history.
+  \item A walk-through video demonstrates every Must Have.
+\end{enumerate}
+
+%=======================================================================
+\section{Technology Stack and Rationale}
+%=======================================================================
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}L{2.2cm} L{3.4cm} X@{}}
+\toprule
+\textbf{Layer} & \textbf{Technology} & \textbf{Why}\\
+\midrule
+Runtime & Node.js &
+One language across the whole stack; no context switching between server and browser\\
+\addlinespace
+Framework & Express &
+Minimal and unopinionated; middleware chaining maps directly onto the
+auth $\rightarrow$ role $\rightarrow$ handler pipeline the brief requires\\
+\addlinespace
+Database & MongoDB + Mongoose 8.5.1 &
+NGO and volunteer records hold genuinely different fields. A document store
+absorbs that without nullable columns or a join table. Mongoose adds the
+schema validation and hooks a raw driver lacks\\
+\addlinespace
+Frontend & React 18 via CDN, Babel 7.26.4 &
+Component model and state handling without a build step. The entire frontend
+is one \texttt{index.html}, so there is no bundler to misconfigure\\
+\addlinespace
+Auth & \texttt{jsonwebtoken} &
+Stateless sessions. The token carries the role, so no session store is needed
+and horizontal scaling stays trivial\\
+\addlinespace
+Hashing & \texttt{bcryptjs}, 12 rounds &
+Pure JavaScript, so no native build toolchain on Windows. Twelve rounds is the
+current practical balance of cost and security\\
+\addlinespace
+Security & \texttt{helmet}, \texttt{express-rate-limit}, \texttt{express-mongo-sanitize} &
+Sensible headers, brute-force throttling, and operator-injection stripping ---
+appropriate for a platform whose subject matter is security\\
+\addlinespace
+Config & \texttt{dotenv} &
+Keeps \texttt{MONGO\_URI} and \texttt{JWT\_SECRET} out of version control\\
+\addlinespace
+Dev tooling & \texttt{nodemon}, WebStorm &
+Auto-restart on save; the IDE run console surfaces stack traces with
+clickable file links\\
+\addlinespace
+Hosting & Render + MongoDB Atlas M0 &
+Both have free tiers adequate for a capstone demo and connect over a
+standard URI\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{Why a single Node project}
+
+An earlier iteration ran the frontend as a separate static project against a
+mock API. Collapsing it into one Express app that serves
+\texttt{public/index.html} eliminated CORS configuration, gave one command to
+start everything, and made deployment a single service rather than two.
+
+\subsection{Why JWT rather than server sessions}
+
+The access-control rule is role-driven, so the role needs to be available on
+every request. Embedding the user id in a signed token and loading the user in
+\texttt{requireAuth} keeps that lookup in one place. The known weakness ---
+tokens staying valid until expiry --- is addressed by the
+\texttt{passwordChangedAt} check described below.
+
+%=======================================================================
+\section{Testing Methods}
+%=======================================================================
+
+\subsection{Black Box Testing}
+
+The full RBAC matrix was exercised through the UI with no reference to the
+implementation.
+
+\begin{center}
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Logged in as} & \textbf{Sees in directory} & \textbf{Admin panel} & \textbf{Can delete others}\\
+\midrule
+NGO       & Volunteers only & Hidden  & No\\
+Volunteer & NGOs only       & Hidden  & No\\
+Admin     & All users       & Visible & Yes\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Additional black-box cases: registering with an already-used email, logging in
+with a wrong password, submitting a forgot-password request for an address
+that does not exist, and submitting the volunteer form with an empty hours field.
+
+\subsection{White Box Testing}
+
+Tested against knowledge of the internals, targeting specific branches:
+
+\begin{itemize}
+  \item \textbf{Hash-state inspection.} A \texttt{check.js} script connects
+        directly to MongoDB, prints the stored hash, asserts it matches the
+        bcrypt prefix pattern, and runs \texttt{bcrypt.compare} against the
+        expected plaintext. This distinguishes a bad login route from a bad
+        hash, which look identical from outside.
+  \item \textbf{Token-vs-timestamp branch.} Captured a token, changed the
+        password, replayed the token, and confirmed the
+        \texttt{payload.iat < passwordChangedAt} branch rejected it.
+  \item \textbf{Pre-save hook guard.} Verified that
+        \texttt{isModified("password")} prevents re-hashing when only a role or
+        active flag is saved.
+  \item \textbf{Last-admin guard.} Reduced the database to a single admin and
+        confirmed both the delete and the demote paths reach the 409 branch.
+\end{itemize}
+
+\subsection{Unit Testing}
+
+Isolated checks on individual functions:
+
+\begin{itemize}
+  \item \texttt{comparePassword} returns \texttt{true} for the correct password,
+        \texttt{false} otherwise
+  \item \texttt{toSafeJSON} omits \texttt{password} and exposes \texttt{id}
+        rather than \texttt{\_id}
+  \item The registration normaliser converts a comma-separated string to a clean
+        array, coerces checkbox values of \texttt{"on"}, \texttt{"true"}, and
+        \texttt{true} to boolean \texttt{true}, and omits \texttt{hours}
+        entirely when the input is blank
+  \item \texttt{requireRole} returns 403 for a role not in its allowed list
+\end{itemize}
+
+\subsection{Integration Testing}
+
+Endpoints were exercised with \texttt{curl.exe} against a running server,
+chaining the token from \texttt{/api/auth/login} into an
+\texttt{Authorization: Bearer} header for subsequent calls. This caught faults
+the browser masked --- most usefully, it distinguished ``the server returned
+401'' from ``nothing is listening on the port,'' which present identically in
+a browser.
+
+\subsection{Regression Testing}
+
+After every significant change, a fixed checklist was re-run: seed, log in as
+each of the three roles, load the directory, open a profile, send a contact
+email, change a password, and perform one admin action. This caught the case
+where a change-password fix broke login for accounts that had never changed
+their password.
+
+\subsection{Security Testing}
+
+\begin{itemize}
+  \item Submitted the payload below to the login endpoint to confirm
+        \texttt{express-mongo-sanitize} strips the operators and authentication fails
+  \item Sent \texttt{"role": "admin"} in a registration payload to confirm the
+        explicit field mapping ignores it
+  \item Repeated failed logins to confirm the rate limiter engages
+  \item Inspected every API response in DevTools to confirm no password hash is
+        ever transmitted
+\end{itemize}
+
+\begin{Verbatim}[fontsize=\small,xleftmargin=1.5em]
+{"email": {"$gt": ""}, "password": {"$gt": ""}}
+\end{Verbatim}
+
+%=======================================================================
+\section{Challenges Faced}
+%=======================================================================
+
+\subsection{Code Pasted Into the Wrong File}
+
+The single most costly problem. A login query was pasted into
+\texttt{models/User.js}, replacing the schema definition. Node reported it as
+a misleading ES-module warning about setting \texttt{"type": "module"}. The
+real fault was a top-level \texttt{await} in a CommonJS file, which Node
+guesses must be an ESM problem. Because the model no longer exported anything
+usable, the seed script failed, the login endpoint failed, and the diagnostic
+script failed --- three unrelated-looking symptoms from one cause. The lesson
+was to run \texttt{node -{}-check} across every file before interpreting a
+confusing error message.
+
+\subsection{Double-Hashed Passwords}
+
+Login rejected credentials that were definitely correct. The stored value
+looked like a valid bcrypt hash, so nothing seemed wrong on inspection. The
+seed script was hashing the password manually \textit{and} the
+\texttt{pre("save")} hook was hashing it again. The fix was to designate the
+hook as the only place hashing ever happens and pass plaintext everywhere
+else. A related latent bug was found at the same time: without an
+\texttt{isModified("password")} guard, every unrelated \texttt{save()} ---
+such as changing a role --- silently re-hashed the stored hash and destroyed
+the account's password.
+
+\subsection{Missing Middleware Import}
+
+\texttt{ReferenceError: requireAuth is not defined} --- the middleware was
+defined and exported, but a route file never imported it. The error class
+mattered: a \texttt{ReferenceError} means the identifier does not exist in
+scope, whereas a bad export shape produces \texttt{Route.get() requires a
+callback function but got [object Undefined]}. Distinguishing the two narrowed
+the search from ``somewhere in auth'' to ``the top of one file.''
+
+\subsection{Server Failing to Bind}
+
+The browser reported \texttt{ERR\_CONNECTION\_REFUSED} while the terminal
+appeared to have started the server. Two causes compounded:
+\texttt{app.listen} sat behind an unhandled \texttt{mongoose.connect}
+rejection, so a database failure killed the process with no message; and the
+server was being started in the same terminal window later used for
+\texttt{curl}, where Ctrl+C had stopped it. Restructuring startup so
+\texttt{app.listen} runs inside \texttt{.then()} with an explicit
+\texttt{.catch}, plus an \texttt{unhandledRejection} handler, turned silent
+exits into readable errors.
+
+\subsection{Volunteer Fields Not Persisting}
+
+After registration, \texttt{areas} saved as an empty array,
+\texttt{backgroundCheck} was always \texttt{false}, and \texttt{hours} was
+absent from the document entirely. The pattern was diagnostic: every field
+with a schema default received its default, and the one field without a
+default vanished --- the signature of values never reaching Mongoose at all.
+The register handler destructured a fixed list of keys and dropped the rest. A
+second defect compounded it: the form sent \texttt{background} while the schema
+declared \texttt{backgroundCheck}, and Mongoose's strict mode discards unknown
+keys silently rather than erroring.
+
+\subsection{Method Name Drift}
+
+\texttt{TypeError: user.checkPassword is not a function} --- the model defined
+\texttt{comparePassword} and a route called \texttt{checkPassword}. Trivial
+once seen, but it highlighted a structural risk: the same concept had acquired
+two names across files, exactly as \texttt{orgName} and \texttt{org} had on the
+frontend boundary.
+
+\subsection{Session Invalidation Side Effects}
+
+Adding \texttt{passwordChangedAt} correctly invalidated old tokens, which then
+produced confusing 401 errors immediately after a successful password change
+--- the frontend was still holding the now-dead token. The fix was to clear
+stored credentials and return the user to sign-in on success.
+
+\subsection{Migration From Mock to Real Backend}
+
+The frontend was originally built against a \texttt{localStorage} mock whose
+method names did not match the eventual REST routes. Rather than rewrite every
+call site, the mock's interface was preserved as a thin \texttt{fetch}-based
+client that maps old names to new endpoints and normalises field names in both
+directions. Dead mock code was then removed. Leftover hardcoded demo
+credentials in the UI caused a separate false alarm when they no longer matched
+what \texttt{seed.js} actually created.
+
+%=======================================================================
+\section{Lessons Learned}
+%=======================================================================
+
+\begin{description}[style=unboxed,leftmargin=0pt,itemsep=6pt]
+  \item[The error message often names the wrong problem.] Node's ESM warning
+    pointed at module configuration when the actual fault was misplaced code.
+    Reading the line number and the quoted source line proved far more reliable
+    than reading the message text.
+  \item[Check the data before debugging the code.] Writing a short script to
+    print the stored hash and run \texttt{bcrypt.compare} directly against it
+    answered in seconds what would otherwise have taken an hour of reading
+    route logic. Inspecting state at the boundary is almost always faster than
+    reasoning about the layers above it.
+  \item[The shape of a failure narrows the cause.] Fields with defaults
+    receiving their defaults while a field without one disappeared entirely was
+    conclusive evidence the data never arrived --- no logging needed to rule
+    out a validation failure.
+  \item[Designate exactly one place for each responsibility.] Hashing in both
+    the seed and the model hook caused the double-hash bug. Making the
+    \texttt{pre("save")} hook the sole owner removed an entire class of error.
+  \item[Guard hooks that mutate.] A \texttt{pre("save")} hook without an
+    \texttt{isModified} check is a latent data-destruction bug that will not
+    surface until an unrelated feature calls \texttt{save()}.
+  \item[Name one concept once.] \texttt{checkPassword} versus
+    \texttt{comparePassword}, \texttt{background} versus
+    \texttt{backgroundCheck}, \texttt{org} versus \texttt{orgName} --- three
+    bugs with the same root cause. Where a boundary genuinely needs two names,
+    the translation belongs in one explicit place.
+  \item[Never pass \texttt{req.body} straight to a model constructor.] Mapping
+    fields explicitly is slightly more code and closes a privilege-escalation
+    hole where a crafted payload could set \texttt{role: "admin"}.
+  \item[Test the layer below before blaming the layer above.] A browser cannot
+    distinguish ``server returned an error'' from ``no server is running.'' A
+    \texttt{curl} exit code can.
+  \item[Commit more often.] Several of these faults would have been a one-line
+    \texttt{git diff} had commits been smaller.
+\end{description}
+
+%=======================================================================
+\section{Future Recommendations}
+%=======================================================================
+
+\subsection{Security}
+\begin{itemize}
+  \item Replace admin-mediated password reset with emailed single-use tokens,
+        hashed at rest with a 15-minute expiry
+  \item Add refresh tokens with a short-lived access token, moving them to
+        \texttt{httpOnly} cookies to remove the XSS exposure of
+        browser-stored JWTs
+  \item Offer TOTP two-factor authentication, particularly for admin accounts
+  \item Require email verification at registration
+  \item Add an append-only audit log of admin actions --- deletions, role
+        changes, password resets
+\end{itemize}
+
+\subsection{Functionality}
+\begin{itemize}
+  \item In-app messaging to replace \texttt{mailto:}, giving a conversation
+        history inside the platform
+  \item A structured engagement workflow: request $\rightarrow$ accept
+        $\rightarrow$ in progress $\rightarrow$ complete, with hours logged
+        against each
+  \item Volunteer availability calendar and matching suggestions based on
+        declared areas
+  \item Verified background-check status reviewed by an admin, rather than
+        self-declared
+  \item Ratings or references after a completed engagement
+  \item Admin dashboard with registration, match, and volunteer-hour metrics
+\end{itemize}
+
+\subsection{Engineering}
+\begin{itemize}
+  \item Introduce a build step with Vite, removing the in-browser Babel
+        transform and its runtime cost
+  \item Automated test suite with Jest and Supertest covering the RBAC matrix
+        and auth edge cases, run in CI on every push
+  \item Split \texttt{index.html} into separate component modules as the
+        frontend grows
+  \item Centralise validation with a schema validator such as Zod, shared
+        between client and server, which would have prevented the
+        field-mapping bug outright
+  \item Structured request logging with Pino
+  \item Database indexes on \texttt{role} and \texttt{areas} to keep directory
+        queries fast at scale
+  \item Pagination on the directory endpoint
+\end{itemize}
+
+\subsection{Accessibility and UX}
+\begin{itemize}
+  \item Full WCAG 2.1 AA audit: keyboard navigation, focus management in
+        modals, colour contrast
+  \item Screen-reader labelling on all form controls and ARIA live regions
+        for toasts
+  \item Inline per-field validation messages rather than a single summary error
+\end{itemize}
+
+%=======================================================================
+\section{Appendix}
+%=======================================================================
+
+\subsection{Repository Structure}
+
+\begin{figure}[H]
+\centering
+\begin{BVerbatim}[fontsize=\small]
+GuardianLink Project/
+|-- server.js        Express app, Mongo connection, static serving
+|-- seed.js          Creates demo admin, NGO, and volunteer
+|-- check.js         Diagnostic: inspects stored hashes
+|-- package.json
+|-- .env             PORT, MONGO_URI, JWT_SECRET, JWT_EXPIRES
+|-- .gitignore       Excludes .env and node_modules
+|-- models/
+|   |-- User.js      Schema, hash hook, comparePassword, toSafeJSON
+|   +-- ResetRequest.js
+|-- middleware/
+|   +-- auth.js      requireAuth, requireRole
+|-- routes/
+|   |-- auth.js      register, login, me, change-password
+|   |-- users.js     self-service profile, password, delete
+|   |-- directory.js role-filtered listing
+|   +-- admin.js     user management, reset queue
++-- public/
+    +-- index.html   React SPA
+\end{BVerbatim}
+\end{figure}
+
+\subsection{API Reference}
+
+\begin{center}
+\begin{longtable}{@{}l L{6.2cm} l X@{}}
+\toprule
+\textbf{Method} & \textbf{Route} & \textbf{Auth} & \textbf{Purpose}\\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Method} & \textbf{Route} & \textbf{Auth} & \textbf{Purpose}\\
+\midrule
+\endhead
+POST   & \texttt{/api/auth/register}            & Public & Create an NGO or volunteer account\\
+POST   & \texttt{/api/auth/login}               & Public & Authenticate, return JWT\\
+GET    & \texttt{/api/auth/me}                  & Any    & Current user\\
+POST   & \texttt{/api/auth/change-password}     & Any    & Self-change, requires current password\\
+POST   & \texttt{/api/auth/forgot-password}     & Public & Create a reset request\\
+GET    & \texttt{/api/directory}                & Any    & Opposite-role profiles\\
+GET    & \texttt{/api/users/:id}                & Any    & Single profile, role-filtered\\
+PATCH  & \texttt{/api/users/me}                 & Any    & Update own profile\\
+DELETE & \texttt{/api/users/me}                 & Any    & Delete own account\\
+GET    & \texttt{/api/admin/users}              & Admin  & All users\\
+POST   & \texttt{/api/admin/users}              & Admin  & Create a user\\
+PATCH  & \texttt{/api/admin/users/:id/role}     & Admin  & Change role (last-admin guarded)\\
+PATCH  & \texttt{/api/admin/users/:id/password} & Admin  & Force-set a password\\
+DELETE & \texttt{/api/admin/users/:id}          & Admin  & Delete a user (last-admin guarded)\\
+GET    & \texttt{/api/admin/reset-requests}     & Admin  & Outstanding reset queue\\
+\bottomrule
+\end{longtable}
+\end{center}
+
+\subsection{Environment Variables}
+
+\begin{Verbatim}[fontsize=\small,xleftmargin=1.5em]
+PORT=3000
+MONGO_URI=mongodb://127.0.0.1:27017/guardianlink
+JWT_SECRET=[long random string]
+JWT_EXPIRES=2h
+\end{Verbatim}
+
+\subsection{Local Setup}
+
+\begin{Verbatim}[fontsize=\small,xleftmargin=1.5em]
+git clone [repository-url]
+cd "GuardianLink Project"
+npm install
+# create .env using the template above
+node seed.js
+npm run dev
+# open http://localhost:3000
+\end{Verbatim}
+
+\subsection{Demo Accounts}
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Role} & \textbf{Email} & \textbf{Password}\\
+\midrule
+Admin     & admin@guardianlink.org  & [as set in seed.js]\\
+NGO       & tom@harvesttable.org    & [as set in seed.js]\\
+Volunteer & amara.sec@example.com   & [as set in seed.js]\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\end{document}
