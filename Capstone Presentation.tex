@@ -1,0 +1,415 @@
+%=======================================================================
+%  GuardianLink -- Capstone Video Run Sheet
+%  Compile:  pdflatex GuardianLink-VideoRunSheet.tex  (run twice for TOC)
+%=======================================================================
+\documentclass[11pt,letterpaper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{fancyvrb}
+\usepackage{float}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{mdframed}
+\usepackage[colorlinks=true,linkcolor=black,urlcolor=blue,
+            citecolor=black]{hyperref}
+
+%----------------------------- styling --------------------------------
+\definecolor{glnavy}{RGB}{20,40,80}
+\definecolor{glwarn}{RGB}{140,30,30}
+\definecolor{glrule}{RGB}{200,205,215}
+
+\titleformat{\section}{\Large\bfseries\color{glnavy}}{\thesection}{1em}{}
+\titleformat{\subsection}{\large\bfseries}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries}{\thesubsubsection}{1em}{}
+\titlespacing*{\section}{0pt}{18pt}{8pt}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\small GuardianLink --- Video Run Sheet}
+\rhead{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\setlist[itemize]{itemsep=2pt,topsep=4pt,parsep=0pt}
+\setlist[enumerate]{itemsep=2pt,topsep=4pt,parsep=0pt}
+
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+
+% checkbox list
+\newenvironment{checklist}
+  {\begin{itemize}[label=$\square$,leftmargin=1.6em,itemsep=3pt]}
+  {\end{itemize}}
+
+% "say this" callout
+\newcommand{\sayit}[1]{%
+  \begin{mdframed}[linecolor=glrule,linewidth=0.8pt,
+                   backgroundcolor=white,
+                   innertopmargin=6pt,innerbottommargin=6pt,
+                   innerleftmargin=8pt,innerrightmargin=8pt,
+                   skipabove=6pt,skipbelow=6pt]
+  \textit{Say:} ``#1''
+  \end{mdframed}}
+
+% warning callout
+\newcommand{\warnbox}[1]{%
+  \begin{mdframed}[linecolor=glwarn,linewidth=1pt,
+                   innertopmargin=6pt,innerbottommargin=6pt,
+                   innerleftmargin=8pt,innerrightmargin=8pt,
+                   skipabove=8pt,skipbelow=8pt]
+  \textbf{\color{glwarn}Warning.}\ #1
+  \end{mdframed}}
+
+%-----------------------------------------------------------------------
+\begin{document}
+
+\begin{center}
+{\LARGE\bfseries\color{glnavy} GuardianLink\par}
+\vspace{4pt}
+{\Large Capstone Video --- Detailed Run Sheet\par}
+\vspace{8pt}
+{\small Target length: 12--15 minutes \quad$\cdot$\quad
+ Student: [Your Name] \quad$\cdot$\quad Date: [Date]\par}
+\end{center}
+\vspace{6pt}
+\hrule
+\vspace{14pt}
+
+\noindent
+The brief asks the video to do one thing: demonstrate that every Must Have
+works. The sequence below is ordered so each segment sets up the next ---
+the forgot-password request is filed early so it is waiting in the admin
+queue later, and every destructive action happens last so you cannot lock
+yourself out mid-recording.
+
+\tableofcontents
+\vspace{10pt}
+\hrule
+
+%=======================================================================
+\section{Before You Record}
+%=======================================================================
+
+\subsection{Start From a Clean Database}
+
+A fresh seed gives predictable data and removes any half-broken accounts
+left over from debugging.
+
+\begin{Verbatim}[fontsize=\small,xleftmargin=1.5em]
+cd "C:\Users\richa\WebstormProjects\HTML\GuardianLink Project"
+node seed.js
+node server.js
+\end{Verbatim}
+
+\subsection{Screen Hygiene}
+
+\begin{checklist}
+  \item Capture \textbf{one display only}. In OBS use Display Capture on the
+        middle monitor and keep this run sheet open on another --- it will
+        look like you are presenting from memory.
+  \item \textbf{Close \texttt{.env} in WebStorm.} Never let
+        \texttt{JWT\_SECRET} or an Atlas password appear on screen. The same
+        applies to any terminal that has echoed them.
+  \item Turn on Windows Focus Assist. Close Discord, Slack, and mail.
+  \item New browser window: no extra tabs, bookmarks bar hidden, zoom at
+        100\,\%.
+  \item Open a \textbf{second browser profile or incognito window}. You will
+        be logged in as two roles at once; this avoids constant
+        log-out / log-in.
+  \item Write the three demo passwords on paper, off-camera, so you do not
+        fumble them live.
+\end{checklist}
+
+\subsection{Dry Run}
+
+Click the entire sequence once with no narration. This surfaces the one
+broken path before it is on tape, and settles the pacing.
+
+\subsection{Recording Tool}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}L{3.2cm} X@{}}
+\toprule
+\textbf{Tool} & \textbf{Notes}\\
+\midrule
+OBS Studio   & Free, reliable, full control over which display is captured\\
+Win+G        & Built into Windows, zero setup, adequate quality\\
+Jumpshare    & Has a built-in recorder, which skips the upload step entirely\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+%=======================================================================
+\section{Run Sheet Overview}
+%=======================================================================
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}C{0.8cm} L{5.2cm} C{1.6cm} X@{}}
+\toprule
+\textbf{\#} & \textbf{Segment} & \textbf{Time} & \textbf{Proves}\\
+\midrule
+0  & Intro                          & 0:30 & ---\\
+1  & Landing / About                & 1:00 & About section requirement\\
+2  & Locked out                     & 1:00 & Access control\\
+3  & File forgot-password request   & 0:45 & Forgot password (part 1)\\
+4  & Volunteer registration         & 1:30 & Volunteer data collection\\
+5  & NGO registration               & 1:00 & NGO data collection\\
+6  & NGO directory and contact      & 1:30 & Cross-role visibility, communication\\
+7  & Volunteer directory            & 0:45 & Cross-role visibility (mirror)\\
+8  & Self-service password change   & 1:00 & Extra credit --- security\\
+9  & Admin panel                    & 3:00 & All admin privileges\\
+10 & Self-deletion                  & 0:45 & Users delete own account only\\
+11 & Mobile view                    & 0:45 & Responsive UI\\
+12 & Code tour and GitHub           & 1:30 & Clean code, version control\\
+13 & Close                          & 0:30 & ---\\
+\midrule
+\multicolumn{2}{@{}l}{\textbf{Total}} & \textbf{14:30} & \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+%=======================================================================
+\section{Segment Detail}
+%=======================================================================
+
+\subsection*{0 --- Intro \hfill \normalfont\small 0:30}
+\addcontentsline{toc}{subsection}{0 --- Intro}
+
+Name, project name, one sentence on what it does, one sentence on the stack.
+
+\sayit{GuardianLink connects volunteer cybersecurity specialists with
+non-profits. It is Express and MongoDB serving a React frontend, with JWT
+authentication and role-based access control.}
+
+\subsection*{1 --- Landing Page \hfill \normalfont\small 1:00}
+\addcontentsline{toc}{subsection}{1 --- Landing Page}
+
+Scroll through and \textbf{name each required section out loud as you reach
+it}. The grader is ticking boxes; make it effortless.
+
+\sayit{Who we are. What we do. Why we do it. And our partners.}
+
+\subsection*{2 --- Locked Out \hfill \normalfont\small 1:00}
+\addcontentsline{toc}{subsection}{2 --- Locked Out}
+
+Two parts, and the second is what separates this from most submissions.
+
+\begin{enumerate}
+  \item Paste the directory route while logged out --- you are redirected to
+        login.
+  \item Then open the API route directly in the address bar --- raw
+        \texttt{401 Unauthorized} JSON.
+\end{enumerate}
+
+\begin{Verbatim}[fontsize=\small,xleftmargin=1.5em]
+http://localhost:3000/#/directory      -> redirected to login
+http://localhost:3000/api/directory    -> 401 Unauthorized
+\end{Verbatim}
+
+\sayit{The protection is not just the UI hiding things. Hitting the API
+directly with no token returns 401 --- it is enforced server-side.}
+
+\subsection*{3 --- Forgot Password, Part One \hfill \normalfont\small 0:45}
+\addcontentsline{toc}{subsection}{3 --- Forgot Password, Part One}
+
+Submit a reset request for the seeded NGO's email address. Mention that an
+unknown email returns an identical confirmation, so the form cannot be used
+to discover who is registered. Leave the request open --- you will resolve
+it in segment 9.
+
+\subsection*{4 --- Volunteer Registration \hfill \normalfont\small 1:30}
+\addcontentsline{toc}{subsection}{4 --- Volunteer Registration}
+
+Fill in every field the brief lists, naming each one as you type: name,
+email, hours per week, background check, LinkedIn URL, areas of expertise.
+
+Then \textbf{open MongoDB Compass and show the saved document}. Given the
+\texttt{areas} / \texttt{hours} / \texttt{backgroundCheck} persistence bug
+that was fixed during development, showing the array populated and the
+boolean correct in the actual database is the strongest twenty seconds in
+the video.
+
+\subsection*{5 --- NGO Registration \hfill \normalfont\small 1:00}
+\addcontentsline{toc}{subsection}{5 --- NGO Registration}
+
+Point-of-contact email, organization name, areas of concern, password.
+
+\subsection*{6 --- NGO Logged In \hfill \normalfont\small 1:30}
+\addcontentsline{toc}{subsection}{6 --- NGO Logged In}
+
+\begin{itemize}
+  \item The directory shows volunteers and \textbf{no NGO cards} --- say so
+        explicitly.
+  \item Use the search box and the area filter.
+  \item Open a volunteer profile, click \textbf{Contact}, and let the mail
+        client open with recipient, subject, and body prefilled.
+  \item Show the draft, then close it without sending.
+\end{itemize}
+
+\subsection*{7 --- Volunteer Logged In \hfill \normalfont\small 0:45}
+\addcontentsline{toc}{subsection}{7 --- Volunteer Logged In}
+
+Switch to the second browser window. NGOs only, no volunteers.
+
+\sayit{Same rule, mirrored.}
+
+\subsection*{8 --- Password Change \hfill \normalfont\small 1:00}
+\addcontentsline{toc}{subsection}{8 --- Password Change}
+
+\begin{enumerate}
+  \item Enter a \textbf{wrong} current password --- rejected.
+  \item Enter the correct one --- success, and you are logged out
+        immediately.
+  \item Log back in with the new password.
+\end{enumerate}
+
+Narrate it so the forced logout reads as deliberate rather than as a bug.
+
+\sayit{Changing the password invalidates every token issued before it, so the
+old session is dead on the next request.}
+
+\subsection*{9 --- Admin Panel \hfill \normalfont\small 3:00}
+\addcontentsline{toc}{subsection}{9 --- Admin Panel}
+
+The longest segment. Follow this order exactly --- it is sequenced so you
+never lock yourself out of the admin account.
+
+\begin{enumerate}
+  \item Log in as admin. The user list shows \textbf{all three roles},
+        unlike the other two accounts.
+  \item \textbf{Last-admin guard first}, while you are still the only admin.
+        Try to demote yourself --- 409, nothing changes. Try to delete
+        yourself --- the same.
+  \item \textbf{Create a basic user profile.} Point out that your own
+        session survives the operation.
+  \item \textbf{Promote} the volunteer to admin. Note that the guard now
+        relaxes, because two admins exist.
+  \item \textbf{Demote} them back.
+  \item \textbf{Resolve the reset request} filed in segment 3. Force-set a
+        new password, and note that you were not asked for a current
+        password, because an administrative override does not require one.
+  \item \textbf{Delete} the throwaway user created in step 3.
+\end{enumerate}
+
+\warnbox{Do not improvise within this segment. Steps 2 and 7 are only safe
+in these positions.}
+
+\subsection*{10 --- Self-Deletion \hfill \normalfont\small 0:45}
+\addcontentsline{toc}{subsection}{10 --- Self-Deletion}
+
+Log in as a regular user. Point out that there is no Admin link in their
+navigation and no delete control on anyone else's profile. Delete their own
+account, then switch to the admin window and refresh to show the row gone.
+
+\subsection*{11 --- Mobile View \hfill \normalfont\small 0:45}
+\addcontentsline{toc}{subsection}{11 --- Mobile View}
+
+DevTools, device toolbar, iPhone SE at 375\,px. Show the landing page, the
+directory, and one form. No horizontal scrolling anywhere.
+
+\subsection*{12 --- Code Tour and GitHub \hfill \normalfont\small 1:30}
+\addcontentsline{toc}{subsection}{12 --- Code Tour and GitHub}
+
+Four files, roughly twenty seconds each.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}L{4.6cm} X@{}}
+\toprule
+\textbf{File} & \textbf{Point out}\\
+\midrule
+\texttt{middleware/auth.js} & \texttt{requireAuth} and \texttt{requireRole}\\
+\texttt{routes/directory.js} & The opposite-role filter derived from the
+token, not from a query parameter\\
+\texttt{models/User.js} & The \texttt{pre("save")} hash hook and its
+\texttt{isModified} guard\\
+\texttt{routes/admin.js} & The last-admin check\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Then GitHub: the repository, the folder structure, and a scroll through the
+commit history.
+
+\subsection*{13 --- Close \hfill \normalfont\small 0:30}
+\addcontentsline{toc}{subsection}{13 --- Close}
+
+Thirty seconds on the extras: \texttt{helmet}, rate limiting,
+\texttt{express-mongo-sanitize}, token invalidation on password change,
+directory search and filtering, and the \texttt{seed.js} / \texttt{check.js}
+tooling. Frame them as deliberate scope choices rather than scope creep.
+
+%=======================================================================
+\section{Pitfalls}
+%=======================================================================
+
+\begin{itemize}
+  \item \textbf{Do not change any code during the recording.} If something
+        breaks, stop, fix it, and re-record that segment.
+  \item \textbf{Do not actually send the contact email.} Open the draft,
+        show the prefilled fields, close it.
+  \item \textbf{Say the status codes out loud} --- ``that is a 409
+        Conflict'' --- whenever a guard fires. It shows the behaviour is
+        designed rather than accidental.
+  \item \textbf{Keep the server terminal in a corner of the capture} if the
+        layout allows. Clean logs running alongside the UI are quietly
+        convincing.
+  \item \textbf{If you fluff a line, pause two seconds and say it again.}
+        Far easier to cut than to re-record a whole segment.
+\end{itemize}
+
+%=======================================================================
+\section{After Recording}
+%=======================================================================
+
+\begin{enumerate}
+  \item Upload the MP4 to \url{https://jumpshare.com} --- free, and no
+        account is needed for a basic share link.
+  \item \textbf{Add timestamps to the description}, one per Must Have. A
+        grader who can jump straight to ``Admin Privileges --- 8:15'' will
+        find everything, which protects you if any single segment is weak.
+  \item Paste the link into the capstone document title page, replacing the
+        walk-through placeholder.
+  \item \textbf{Confirm the link opens in a private browser window.} A link
+        only you can view is the most common submission failure.
+  \item Push a final commit so the repository matches what is in the video.
+\end{enumerate}
+
+%=======================================================================
+\section*{Appendix --- Timestamp Template}
+\addcontentsline{toc}{section}{Appendix --- Timestamp Template}
+%=======================================================================
+
+Fill these in after the final cut and paste them into the video description.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}L{2.2cm} X@{}}
+\toprule
+\textbf{Time} & \textbf{Must Have demonstrated}\\
+\midrule
+\rule{1.6cm}{0.4pt} & About page --- who, what, why, partners\\
+\rule{1.6cm}{0.4pt} & Login required to view profiles\\
+\rule{1.6cm}{0.4pt} & NGO registration and data capture\\
+\rule{1.6cm}{0.4pt} & Volunteer registration and data capture\\
+\rule{1.6cm}{0.4pt} & Cross-role visibility only\\
+\rule{1.6cm}{0.4pt} & NGO-to-volunteer communication\\
+\rule{1.6cm}{0.4pt} & Forgot password\\
+\rule{1.6cm}{0.4pt} & Admin privileges\\
+\rule{1.6cm}{0.4pt} & At least one admin at all times\\
+\rule{1.6cm}{0.4pt} & Users delete own account only\\
+\rule{1.6cm}{0.4pt} & Responsive desktop and mobile\\
+\rule{1.6cm}{0.4pt} & Code walk-through and repository\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\end{document}
